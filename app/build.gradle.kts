@@ -8,6 +8,14 @@ repositories {
 }
 
 dependencies {
+  implementation(libs.vertx.lang.kotlin)
+  implementation(libs.vertx.web)
+  runtimeOnly(
+    group = "io.netty",
+    name = "netty-resolver-dns-native-macos",
+    version = libs.versions.netty.get(),
+    classifier = "osx-aarch_64"
+  )
 }
 
 testing {
