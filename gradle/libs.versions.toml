@@ -1,6 +1,10 @@
 [versions]
+vertx = "5.0.1"
+netty = "4.2.2.Final" # Should align with netty the version that Vert.x uses
 
 [libraries]
+vertx-lang-kotlin = { group = "io.vertx", name = "vertx-lang-kotlin", version.ref = "vertx" }
+vertx-web = { group = "io.vertx", name = "vertx-web", version.ref = "vertx" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.1.20" }
