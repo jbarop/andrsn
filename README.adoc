@@ -1,0 +1,34 @@
+= andrsn
+
+[quote]
+Deploy your Matrix.
+
+== About the Project
+
+_andrsn_ is a minimal, from-scratch implementation of a Matrix homeserver in Kotlin.
+
+The name “andrsn” is a subtle nod to Neo’s original identity (Mr. Anderson) from the movie "The Matrix".
+The motto *“deploy your Matrix.”* stands for taking control – hosting your own digital reality on your own terms.
+
+The project is in early development. Contributions and discussions are very welcome!
+
+It was born out of a desire to understand the Matrix protocol on a technical level and to experiment with architectural concepts for low-latency, real-time communication.
+It is primarily a personal playground for learning and exploration – not intended to become a fully featured or production-ready homeserver.
+
+== License
+
+This project is licensed under the GNU Affero General Public License (AGPL) v3.
+See the link:LICENSE[LICENSE] file for more details.
+
+== Development
+
+The server currently uses a self-signed SSL certificate for local development.
+To trust the certificate in your system and browsers, you can use:
+
+[source,sh]
+----
+mkcert --install
+----
+
+This installs a local Certificate Authority (CA) that allows `mkcert`-generated certificates to be trusted automatically.
+For more information, see https://github.com/FiloSottile/mkcert[mkcert on GitHub].
