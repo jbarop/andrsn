@@ -2,7 +2,9 @@ package io.andrsn.http
 
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
+import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.json.JsonObject
+import io.vertx.core.net.PemKeyCertOptions
 import io.vertx.core.net.SocketAddress.inetSocketAddress
 import io.vertx.ext.web.Router.router
 import kotlin.system.exitProcess
@@ -16,10 +18,20 @@ fun startHttpServer() {
 private class HttpServer : AbstractVerticle() {
 
   override fun start() {
-    val bindAddress = inetSocketAddress(8080, "localhost")
-    vertx.createHttpServer()
+    val bindAddress = inetSocketAddress(8443, "localhost")
+    val options = HttpServerOptions()
+      .setSsl(true)
+      .setHost(bindAddress.host())
+      .setPort(bindAddress.port())
+      .setKeyCertOptions(
+        PemKeyCertOptions()
+          .setKeyPath("localhost-key.pem")
+          .setCertPath("localhost.pem")
+      )
+
+    vertx.createHttpServer(options)
       .requestHandler(createRouter())
-      .listen(bindAddress)
+      .listen()
       .onSuccess {
         println("HTTP server listening on $bindAddress")
       }
