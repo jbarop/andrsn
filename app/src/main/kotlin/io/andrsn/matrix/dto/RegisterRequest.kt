@@ -15,7 +15,6 @@ data class RegisterRequest(
 
   @CompiledJson
   data class Authentication(
-    val session: String
+    val session: String,
   )
-
 }

@@ -1,7 +1,7 @@
 package io.andrsn.matrix
 
 import java.security.SecureRandom
-import java.util.*
+import java.util.Base64
 
 object SessionGenerator {
   private val secureRandom = SecureRandom()
@@ -12,5 +12,4 @@ object SessionGenerator {
     secureRandom.nextBytes(buffer)
     return base64Encoder.encodeToString(buffer)
   }
-
 }
