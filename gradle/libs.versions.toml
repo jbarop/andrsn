@@ -1,10 +1,14 @@
 [versions]
+kotlin = "2.1.20"
 vertx = "5.0.1"
 netty = "4.2.2.Final" # Should align with netty the version that Vert.x uses
+dsljson = "2.0.2"
 
 [libraries]
 vertx-lang-kotlin = { group = "io.vertx", name = "vertx-lang-kotlin", version.ref = "vertx" }
 vertx-web = { group = "io.vertx", name = "vertx-web", version.ref = "vertx" }
+dsljson = { group = "com.dslplatform", name = "dsl-json", version.ref = "dsljson" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.1.20" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }

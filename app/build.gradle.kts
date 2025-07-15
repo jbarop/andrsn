@@ -1,5 +1,6 @@
 plugins {
   alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.kotlin.kapt)
   application
 }
 
@@ -16,6 +17,9 @@ dependencies {
     version = libs.versions.netty.get(),
     classifier = "osx-aarch_64"
   )
+
+  implementation(libs.dsljson)
+  kapt(libs.dsljson)
 }
 
 testing {
