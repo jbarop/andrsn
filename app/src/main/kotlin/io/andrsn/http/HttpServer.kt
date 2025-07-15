@@ -23,29 +23,32 @@ fun startHttpServer(matrix: Matrix) {
   }
 }
 
-private class HttpServer(private val matrix: Matrix) : AbstractVerticle() {
+private class HttpServer(
+  private val matrix: Matrix,
+) : AbstractVerticle() {
 
   private val json = DslJson<Any>()
 
   override fun start() {
     val bindAddress = inetSocketAddress(8443, "localhost")
-    val options = HttpServerOptions()
-      .setSsl(true)
-      .setHost(bindAddress.host())
-      .setPort(bindAddress.port())
-      .setKeyCertOptions(
-        PemKeyCertOptions()
-          .setKeyPath("localhost-key.pem")
-          .setCertPath("localhost.pem")
-      )
+    val options =
+      HttpServerOptions()
+        .setSsl(true)
+        .setHost(bindAddress.host())
+        .setPort(bindAddress.port())
+        .setKeyCertOptions(
+          PemKeyCertOptions()
+            .setKeyPath("localhost-key.pem")
+            .setCertPath("localhost.pem"),
+        )
 
-    vertx.createHttpServer(options)
+    vertx
+      .createHttpServer(options)
       .requestHandler(createRouter())
       .listen()
       .onSuccess {
         println("HTTP server listening on $bindAddress")
-      }
-      .onFailure {
+      }.onFailure {
         println("Failed to start HTTP server: ${it.localizedMessage}")
         it.printStackTrace()
         exitProcess(1)
@@ -66,7 +69,8 @@ private class HttpServer(private val matrix: Matrix) : AbstractVerticle() {
     Handler { ctx ->
       val baos = ByteArrayOutputStream()
       json.serialize(matrix.getSupportedVersions(), baos)
-      ctx.response()
+      ctx
+        .response()
         .putHeader("Content-Type", "application/json")
         .end(Buffer.buffer(baos.toByteArray()))
     }
@@ -75,7 +79,8 @@ private class HttpServer(private val matrix: Matrix) : AbstractVerticle() {
     Handler { ctx ->
       val baos = ByteArrayOutputStream()
       json.serialize(matrix.getLoginTypes(), baos)
-      ctx.response()
+      ctx
+        .response()
         .putHeader("Content-Type", "application/json")
         .end(Buffer.buffer(baos.toByteArray()))
     }
@@ -83,15 +88,17 @@ private class HttpServer(private val matrix: Matrix) : AbstractVerticle() {
   private fun registerHandler(): Handler<RoutingContext> =
     Handler { ctx ->
       ctx.request().bodyHandler { body ->
-        val registerRequest = json.deserialize(
-          RegisterRequest::class.java,
-          body.bytes,
-          body.bytes.size
-        ) ?: throw IllegalArgumentException("Failed to deserialize request")
+        val registerRequest =
+          json.deserialize(
+            RegisterRequest::class.java,
+            body.bytes,
+            body.bytes.size,
+          ) ?: throw IllegalArgumentException("Failed to deserialize request")
 
         val baos = ByteArrayOutputStream()
         json.serialize(matrix.register(registerRequest), baos)
-        ctx.response()
+        ctx
+          .response()
           .setStatusCode(401)
           .putHeader("Content-Type", "application/json")
           .end(Buffer.buffer(baos.toByteArray()))
@@ -109,11 +116,11 @@ private class HttpServer(private val matrix: Matrix) : AbstractVerticle() {
       ctx.response().putHeader("Access-Control-Allow-Origin", "*")
       ctx.response().putHeader(
         "Access-Control-Allow-Methods",
-        "GET,POST,PUT,DELETE,OPTIONS"
+        "GET,POST,PUT,DELETE,OPTIONS",
       )
       ctx.response().putHeader(
         "Access-Control-Allow-Headers",
-        "Authorization,Content-Type,X-Requested-With"
+        "Authorization,Content-Type,X-Requested-With",
       )
       ctx.response().putHeader("Access-Control-Allow-Credentials", "true")
 
@@ -126,13 +133,14 @@ private class HttpServer(private val matrix: Matrix) : AbstractVerticle() {
 
   private fun notFoundHandler(): Handler<RoutingContext> =
     Handler { ctx ->
-      val error = JsonObject()
-        .put("errcode", "M_NOT_FOUND")
-        .put("error", "No resource was found for this request.")
-      ctx.response()
+      val error =
+        JsonObject()
+          .put("errcode", "M_NOT_FOUND")
+          .put("error", "No resource was found for this request.")
+      ctx
+        .response()
         .setStatusCode(404)
         .putHeader("Content-Type", "application/json")
         .end(error.encode())
     }
-
 }

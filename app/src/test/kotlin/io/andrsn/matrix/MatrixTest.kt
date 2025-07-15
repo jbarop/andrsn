@@ -15,7 +15,8 @@ class MatrixTest {
 
   @Test
   fun `it should give supported login types`() {
-    assertThat(sut.getLoginTypes().flows).contains(LoginTypesResponse.Flow("m.login.password"))
+    assertThat(
+      sut.getLoginTypes().flows,
+    ).contains(LoginTypesResponse.Flow("m.login.password"))
   }
-
 }

@@ -11,5 +11,4 @@ data class LoginTypesResponse(
   data class Flow(
     val type: String,
   )
-
 }
