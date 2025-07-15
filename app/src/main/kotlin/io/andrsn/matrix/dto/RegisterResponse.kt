@@ -12,5 +12,4 @@ data class RegisterResponse(
   data class Flow(
     val stages: List<String>,
   )
-
 }

@@ -12,5 +12,4 @@ class SessionGeneratorTest {
     val sessionId = sut.generateSessionId()
     assertThat(sessionId).hasSize(48)
   }
-
 }

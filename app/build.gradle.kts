@@ -1,6 +1,7 @@
 plugins {
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.kapt)
+  alias(libs.plugins.ktlint)
   application
 }
 
@@ -15,7 +16,7 @@ dependencies {
     group = "io.netty",
     name = "netty-resolver-dns-native-macos",
     version = libs.versions.netty.get(),
-    classifier = "osx-aarch_64"
+    classifier = "osx-aarch_64",
   )
 
   implementation(libs.dsljson)
