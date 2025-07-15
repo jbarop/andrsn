@@ -20,12 +20,14 @@ dependencies {
 
   implementation(libs.dsljson)
   kapt(libs.dsljson)
+
+  testImplementation(libs.assertj.core)
 }
 
 testing {
   suites {
     val test by getting(JvmTestSuite::class) {
-      useJUnitJupiter("5.13.3")
+      useJUnitJupiter(libs.versions.junit.get())
     }
   }
 }
