@@ -1,7 +1,8 @@
 package io.andrsn.http
 
 import com.dslplatform.json.DslJson
-import io.andrsn.matrix.supportedVersions
+import io.andrsn.matrix.Matrix
+import io.andrsn.matrix.dto.RegisterRequest
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
@@ -16,13 +17,13 @@ import io.vertx.ext.web.RoutingContext
 import java.io.ByteArrayOutputStream
 import kotlin.system.exitProcess
 
-fun startHttpServer() {
+fun startHttpServer(matrix: Matrix) {
   with(Vertx.vertx()) {
-    deployVerticle(HttpServer())
+    deployVerticle(HttpServer(matrix))
   }
 }
 
-private class HttpServer : AbstractVerticle() {
+private class HttpServer(private val matrix: Matrix) : AbstractVerticle() {
 
   private val json = DslJson<Any>()
 
@@ -56,16 +57,45 @@ private class HttpServer : AbstractVerticle() {
       route().handler(corsHandler())
       route().handler(logRequestHandler())
       get("/_matrix/client/versions").handler(versionsHandler())
+      get("/_matrix/client/v3/login").handler(loginInformationHandler())
+      post("/_matrix/client/v3/register").handler(registerHandler())
       route().handler(notFoundHandler())
     }
 
   private fun versionsHandler(): Handler<RoutingContext> =
     Handler { ctx ->
       val baos = ByteArrayOutputStream()
-      json.serialize(supportedVersions, baos)
+      json.serialize(matrix.getSupportedVersions(), baos)
       ctx.response()
         .putHeader("Content-Type", "application/json")
         .end(Buffer.buffer(baos.toByteArray()))
+    }
+
+  private fun loginInformationHandler(): Handler<RoutingContext> =
+    Handler { ctx ->
+      val baos = ByteArrayOutputStream()
+      json.serialize(matrix.getLoginTypes(), baos)
+      ctx.response()
+        .putHeader("Content-Type", "application/json")
+        .end(Buffer.buffer(baos.toByteArray()))
+    }
+
+  private fun registerHandler(): Handler<RoutingContext> =
+    Handler { ctx ->
+      ctx.request().bodyHandler { body ->
+        val registerRequest = json.deserialize(
+          RegisterRequest::class.java,
+          body.bytes,
+          body.bytes.size
+        ) ?: throw IllegalArgumentException("Failed to deserialize request")
+
+        val baos = ByteArrayOutputStream()
+        json.serialize(matrix.register(registerRequest), baos)
+        ctx.response()
+          .setStatusCode(401)
+          .putHeader("Content-Type", "application/json")
+          .end(Buffer.buffer(baos.toByteArray()))
+      }
     }
 
   private fun logRequestHandler(): Handler<RoutingContext> =
