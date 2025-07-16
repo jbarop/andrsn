@@ -10,13 +10,18 @@ class MatrixTest {
 
   @Test
   fun `it should support v1_11`() {
-    assertThat(sut.getSupportedVersions().versions).contains("v1.11")
+    val result = sut.getSupportedVersions()
+
+    assertThat(result.statusCode).isEqualTo(200)
+    assertThat(result.data.versions).contains("v1.11")
   }
 
   @Test
   fun `it should give supported login types`() {
-    assertThat(
-      sut.getLoginTypes().flows,
-    ).contains(LoginTypesResponse.Flow("m.login.password"))
+    val result = sut.getLoginTypes()
+
+    assertThat(result.statusCode).isEqualTo(200)
+    assertThat(result.data.flows)
+      .contains(LoginTypesResponse.Flow("m.login.password"))
   }
 }
