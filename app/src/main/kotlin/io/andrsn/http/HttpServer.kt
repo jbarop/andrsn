@@ -30,12 +30,22 @@ import io.vertx.ext.web.RoutingContext
 import java.io.ByteArrayOutputStream
 import kotlin.system.exitProcess
 
+/**
+ * Starts the HTTP server.
+ *
+ * It exposes Matrix API endpoints and handles JSON (de)serialization,
+ * error responses, and CORS. Business logic is delegated to a [Matrix]
+ * instance.
+ */
 fun startHttpServer(matrix: Matrix) {
   with(Vertx.vertx()) {
     deployVerticle(HttpServer(matrix))
   }
 }
 
+/**
+ * HTTP server implementation using Vert.x for handling HTTP requests.
+ */
 private class HttpServer(
   private val matrix: Matrix,
 ) : AbstractVerticle() {
