@@ -10,7 +10,7 @@ data class RegisterRequest(
   val authentication: Authentication?,
 
   @JsonAttribute(name = "initial_device_display_name")
-  val initialDeviceDisplayName: String?,
+  val initialDeviceDisplayName: String,
 ) {
 
   @CompiledJson
