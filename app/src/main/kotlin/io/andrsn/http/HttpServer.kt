@@ -1,19 +1,27 @@
 package io.andrsn.http
 
 import com.dslplatform.json.DslJson
+import com.dslplatform.json.ParsingException
 import io.andrsn.matrix.Matrix
+import io.andrsn.matrix.dto.ErrorResponse
 import io.andrsn.matrix.dto.LoginTypesResponse
 import io.andrsn.matrix.dto.MatrixResponse
 import io.andrsn.matrix.dto.RegisterRequest
 import io.andrsn.matrix.dto.RegisterResponse
 import io.andrsn.matrix.dto.VersionsResponse
+import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.http.HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS
+import io.vertx.core.http.HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS
+import io.vertx.core.http.HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS
+import io.vertx.core.http.HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN
+import io.vertx.core.http.HttpHeaders.AUTHORIZATION
+import io.vertx.core.http.HttpHeaders.CONTENT_TYPE
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerOptions
-import io.vertx.core.json.JsonObject
 import io.vertx.core.net.PemKeyCertOptions
 import io.vertx.core.net.SocketAddress.inetSocketAddress
 import io.vertx.ext.web.Route
@@ -64,14 +72,38 @@ private class HttpServer(
     router(vertx).apply {
       route().handler(corsHandler())
       route().handler(logRequestHandler())
+
       get("/_matrix/client/versions")
         .handler<Unit, VersionsResponse> { matrix.getSupportedVersions() }
       get("/_matrix/client/v3/login")
         .handler<Unit, LoginTypesResponse> { matrix.getLoginTypes() }
       post("/_matrix/client/v3/register")
         .handler<RegisterRequest, RegisterResponse> { matrix.register(it) }
-      route().handler(notFoundHandler())
+
+      route().handler { ctx ->
+        ctx
+          .sendResponse(
+            statusCode = 404,
+            data =
+              ErrorResponse(
+                errcode = "M_NOT_FOUND",
+                error = "No resource was found for this request.",
+              ),
+          )
+      }
     }
+
+  private fun <T> RoutingContext.sendResponse(
+    statusCode: Int,
+    data: T,
+  ) {
+    val baos = ByteArrayOutputStream()
+    json.serialize(data, baos)
+    response()
+      .setStatusCode(statusCode)
+      .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+      .end(Buffer.buffer(baos.toByteArray()))
+  }
 
   private inline fun <reified RequestDto, ResponseDto> Route.handler(
     crossinline block: (dto: RequestDto) -> MatrixResponse<ResponseDto>,
@@ -79,25 +111,60 @@ private class HttpServer(
     this.handler { ctx ->
       ctx.request().bodyHandler { body ->
         val requestDto =
-          if (RequestDto::class.java == Unit.javaClass) {
-            Unit as RequestDto
-          } else {
-            json.deserialize(
-              RequestDto::class.java,
-              body.bytes,
-              body.bytes.size,
-            )
-              ?: throw IllegalArgumentException("Failed to deserialize request")
+          try {
+            if (RequestDto::class.java == Unit.javaClass) {
+              Unit as RequestDto
+            } else {
+              json.deserialize(
+                RequestDto::class.java,
+                body.bytes,
+                body.bytes.size,
+              )
+            }
+          } catch (e: Exception) {
+            when (e) {
+              is ParsingException -> {
+                ctx.sendResponse(
+                  statusCode = 400,
+                  data =
+                    ErrorResponse(
+                      errcode = "M_NOT_JSON",
+                      error = "Invalid request: ${e.localizedMessage}",
+                    ),
+                )
+              }
+
+              is NullPointerException -> {
+                ctx.sendResponse(
+                  statusCode = 400,
+                  data =
+                    ErrorResponse(
+                      errcode = "M_BAD_JSON",
+                      error = "Invalid request: ${e.localizedMessage}",
+                    ),
+                )
+              }
+
+              else -> {
+                ctx.sendResponse(
+                  statusCode = 500,
+                  data =
+                    ErrorResponse(
+                      errcode = "M_UNKNOWN",
+                      error = e.localizedMessage,
+                    ),
+                )
+              }
+            }
+            return@bodyHandler
           }
 
         val matrixResponse = block(requestDto)
-        val baos = ByteArrayOutputStream()
-        json.serialize(matrixResponse.data, baos)
         ctx
-          .response()
-          .setStatusCode(matrixResponse.statusCode)
-          .putHeader("Content-Type", "application/json")
-          .end(Buffer.buffer(baos.toByteArray()))
+          .sendResponse(
+            statusCode = matrixResponse.statusCode,
+            data = matrixResponse.data,
+          )
       }
     }
   }
@@ -110,34 +177,21 @@ private class HttpServer(
 
   private fun corsHandler(): Handler<RoutingContext> =
     Handler { ctx ->
-      ctx.response().putHeader("Access-Control-Allow-Origin", "*")
+      ctx.response().putHeader(ACCESS_CONTROL_ALLOW_ORIGIN, "*")
       ctx.response().putHeader(
-        "Access-Control-Allow-Methods",
+        ACCESS_CONTROL_ALLOW_METHODS,
         "GET,POST,PUT,DELETE,OPTIONS",
       )
       ctx.response().putHeader(
-        "Access-Control-Allow-Headers",
-        "Authorization,Content-Type,X-Requested-With",
+        ACCESS_CONTROL_ALLOW_HEADERS,
+        "$AUTHORIZATION,$CONTENT_TYPE,X-Requested-With",
       )
-      ctx.response().putHeader("Access-Control-Allow-Credentials", "true")
+      ctx.response().putHeader(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
 
       if (ctx.request().method() == HttpMethod.OPTIONS) {
         ctx.response().setStatusCode(204).end()
       } else {
         ctx.next()
       }
-    }
-
-  private fun notFoundHandler(): Handler<RoutingContext> =
-    Handler { ctx ->
-      val error =
-        JsonObject()
-          .put("errcode", "M_NOT_FOUND")
-          .put("error", "No resource was found for this request.")
-      ctx
-        .response()
-        .setStatusCode(404)
-        .putHeader("Content-Type", "application/json")
-        .end(error.encode())
     }
 }
