@@ -49,16 +49,15 @@ private class HttpServer(
 
   override fun start() {
     val bindAddress = inetSocketAddress(8443, "localhost")
-    val options =
-      HttpServerOptions()
-        .setSsl(true)
-        .setHost(bindAddress.host())
-        .setPort(bindAddress.port())
-        .setKeyCertOptions(
-          PemKeyCertOptions()
-            .setKeyPath("localhost-key.pem")
-            .setCertPath("localhost.pem"),
-        )
+    val options = HttpServerOptions()
+      .setSsl(true)
+      .setHost(bindAddress.host())
+      .setPort(bindAddress.port())
+      .setKeyCertOptions(
+        PemKeyCertOptions()
+          .setKeyPath("localhost-key.pem")
+          .setCertPath("localhost.pem"),
+      )
 
     vertx
       .createHttpServer(options)

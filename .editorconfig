@@ -10,3 +10,4 @@ tab_width = 2
 ktlint_code_style = ktlint_official
 ktlint_standard_no-blank-line-in-list = disabled
 ktlint_standard_no-empty-first-line-in-class-body = disabled
+ktlint_standard_multiline-expression-wrapping = disabled
