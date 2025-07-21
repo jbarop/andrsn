@@ -6,7 +6,7 @@ import com.dslplatform.json.JsonAttribute
 @CompiledJson
 data class VersionsResponse(
 
-  @JsonAttribute(name = "unstable_features")
+  @field:JsonAttribute(name = "unstable_features")
   val unstableFeatures: Map<String, Boolean>? = emptyMap(),
 
   val versions: List<String>,
