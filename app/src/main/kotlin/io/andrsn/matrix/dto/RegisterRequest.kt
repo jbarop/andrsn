@@ -6,10 +6,10 @@ import com.dslplatform.json.JsonAttribute
 @CompiledJson
 data class RegisterRequest(
 
-  @JsonAttribute(name = "auth")
+  @field:JsonAttribute(name = "auth")
   val authentication: Authentication?,
 
-  @JsonAttribute(name = "initial_device_display_name")
+  @field:JsonAttribute(name = "initial_device_display_name")
   val initialDeviceDisplayName: String?,
 ) {
 
