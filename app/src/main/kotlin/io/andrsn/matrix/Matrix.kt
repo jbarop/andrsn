@@ -1,15 +1,43 @@
 package io.andrsn.matrix
 
+import com.dslplatform.json.DslJson
+import io.andrsn.matrix.dto.ErrorResponse
 import io.andrsn.matrix.dto.LoginTypesResponse
-import io.andrsn.matrix.dto.MatrixResponse
-import io.andrsn.matrix.dto.RegisterRequest
+import io.andrsn.matrix.dto.MatrixRequest
+import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_GET_LOGIN
+import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_GET_VERSIONS
+import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_POST_REGISTER
 import io.andrsn.matrix.dto.RegisterResponse
 import io.andrsn.matrix.dto.VersionsResponse
 
 class Matrix {
 
-  fun getSupportedVersions(): MatrixResponse<VersionsResponse> =
-    MatrixResponse(
+  private val json = DslJson<Any>()
+
+  fun handleEvent(event: MatrixRequest) =
+    try {
+      when (event.method) {
+        CLIENT_GET_VERSIONS -> getSupportedVersions(event)
+        CLIENT_GET_LOGIN -> getLoginTypes(event)
+        CLIENT_POST_REGISTER -> register(event)
+        null -> {
+          event.sendResponse(
+            400,
+            ErrorResponse(
+              errcode = "M_NOT_FOUND",
+              error = "No resource was found for this request.",
+            ),
+          )
+        }
+      }
+    } catch (e: Exception) {
+      println("Error handling event: ${e.localizedMessage}")
+      e.printStackTrace()
+      event.finishResponse(500)
+    }
+
+  private fun getSupportedVersions(event: MatrixRequest) =
+    event.sendResponse(
       statusCode = 200,
       data =
         VersionsResponse(
@@ -31,8 +59,8 @@ class Matrix {
         ),
     )
 
-  fun getLoginTypes(): MatrixResponse<LoginTypesResponse> =
-    MatrixResponse(
+  private fun getLoginTypes(request: MatrixRequest) =
+    request.sendResponse(
       statusCode = 200,
       data =
         LoginTypesResponse(
@@ -43,8 +71,8 @@ class Matrix {
         ),
     )
 
-  fun register(request: RegisterRequest): MatrixResponse<RegisterResponse> =
-    MatrixResponse(
+  private fun register(request: MatrixRequest) =
+    request.sendResponse(
       statusCode = 401,
       data =
         RegisterResponse(
@@ -57,4 +85,12 @@ class Matrix {
             ),
         ),
     )
+
+  private fun MatrixRequest.sendResponse(
+    statusCode: Int,
+    data: Any,
+  ) {
+    json.serialize(data, responseStream)
+    this.finishResponse(statusCode)
+  }
 }
