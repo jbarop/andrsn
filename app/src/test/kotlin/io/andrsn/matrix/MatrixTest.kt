@@ -3,8 +3,6 @@ package io.andrsn.matrix
 import com.dslplatform.json.DslJson
 import io.andrsn.matrix.dto.LoginTypesResponse
 import io.andrsn.matrix.dto.MatrixRequest
-import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_GET_LOGIN
-import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_GET_VERSIONS
 import io.andrsn.matrix.dto.VersionsResponse
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -18,7 +16,8 @@ class MatrixTest {
 
   @Test
   fun `it should support v1_11`() {
-    val result = sut.simulateRequest<VersionsResponse>(CLIENT_GET_VERSIONS)
+    val result =
+      sut.simulateRequest<VersionsResponse>("/_matrix/client/versions")
 
     assertThat(result.statusCode).isEqualTo(200)
     assertThat(result.data.versions).contains("v1.11")
@@ -26,7 +25,8 @@ class MatrixTest {
 
   @Test
   fun `it should give supported login types`() {
-    val result = sut.simulateRequest<LoginTypesResponse>(CLIENT_GET_LOGIN)
+    val result =
+      sut.simulateRequest<LoginTypesResponse>("/_matrix/client/v3/login")
 
     assertThat(result.statusCode).isEqualTo(200)
     assertThat(result.data.flows)
@@ -34,7 +34,7 @@ class MatrixTest {
   }
 
   private inline fun <reified T> Matrix.simulateRequest(
-    method: MatrixRequest.Method,
+    method: String,
   ): Response<T> {
     var responseData: T? = null
 

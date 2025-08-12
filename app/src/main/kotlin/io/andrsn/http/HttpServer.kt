@@ -2,9 +2,6 @@ package io.andrsn.http
 
 import io.andrsn.matrix.Matrix
 import io.andrsn.matrix.dto.MatrixRequest
-import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_GET_LOGIN
-import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_GET_VERSIONS
-import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_POST_REGISTER
 import io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
@@ -76,18 +73,14 @@ private class HttpServer(
     router(vertx).apply {
       route().handler(corsHandler())
       route().handler(logRequestHandler())
-
-      get(CLIENT_GET_VERSIONS.path).matrixHandler(CLIENT_GET_VERSIONS)
-      get(CLIENT_GET_LOGIN.path).matrixHandler(CLIENT_GET_LOGIN)
-      post(CLIENT_POST_REGISTER.path).matrixHandler(CLIENT_POST_REGISTER)
-      route().matrixHandler(null)
+      route().matrixHandler()
     }
 
-  private fun Route.matrixHandler(method: MatrixRequest.Method?) {
+  private fun Route.matrixHandler() {
     this.handler { ctx ->
       ctx.request().bodyHandler { body ->
         val request = MatrixRequest()
-        request.method = method
+        request.method = ctx.request().path()
         request.requestBody = body.bytes
         request.responseStream = ByteArrayOutputStream()
         request.finishResponse = { statusCode: Int ->
