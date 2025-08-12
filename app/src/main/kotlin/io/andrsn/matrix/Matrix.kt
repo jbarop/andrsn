@@ -4,9 +4,6 @@ import com.dslplatform.json.DslJson
 import io.andrsn.matrix.dto.ErrorResponse
 import io.andrsn.matrix.dto.LoginTypesResponse
 import io.andrsn.matrix.dto.MatrixRequest
-import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_GET_LOGIN
-import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_GET_VERSIONS
-import io.andrsn.matrix.dto.MatrixRequest.Method.CLIENT_POST_REGISTER
 import io.andrsn.matrix.dto.RegisterResponse
 import io.andrsn.matrix.dto.VersionsResponse
 
@@ -17,10 +14,10 @@ class Matrix {
   fun handleEvent(event: MatrixRequest) =
     try {
       when (event.method) {
-        CLIENT_GET_VERSIONS -> getSupportedVersions(event)
-        CLIENT_GET_LOGIN -> getLoginTypes(event)
-        CLIENT_POST_REGISTER -> register(event)
-        null -> {
+        "/_matrix/client/versions" -> getSupportedVersions(event)
+        "/_matrix/client/v3/login" -> getLoginTypes(event)
+        "/_matrix/client/v3/register" -> register(event)
+        else -> {
           event.sendResponse(
             statusCode = 400,
             data = ErrorResponse(
