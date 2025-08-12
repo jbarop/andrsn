@@ -80,7 +80,8 @@ private class HttpServer(
     this.handler { ctx ->
       ctx.request().bodyHandler { body ->
         val request = MatrixRequest()
-        request.method = ctx.request().path()
+        request.method = ctx.request().method().name()
+        request.path = ctx.request().path()
         request.requestBody = body.bytes
         request.responseStream = ByteArrayOutputStream()
         request.finishResponse = { statusCode: Int ->

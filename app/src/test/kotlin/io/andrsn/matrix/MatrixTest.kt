@@ -17,7 +17,7 @@ class MatrixTest {
   @Test
   fun `it should support v1_11`() {
     val result =
-      sut.simulateRequest<VersionsResponse>("/_matrix/client/versions")
+      sut.simulateRequest<VersionsResponse>("GET", "/_matrix/client/versions")
 
     assertThat(result.statusCode).isEqualTo(200)
     assertThat(result.data.versions).contains("v1.11")
@@ -26,7 +26,7 @@ class MatrixTest {
   @Test
   fun `it should give supported login types`() {
     val result =
-      sut.simulateRequest<LoginTypesResponse>("/_matrix/client/v3/login")
+      sut.simulateRequest<LoginTypesResponse>("GET", "/_matrix/client/v3/login")
 
     assertThat(result.statusCode).isEqualTo(200)
     assertThat(result.data.flows)
@@ -35,12 +35,14 @@ class MatrixTest {
 
   private inline fun <reified T> Matrix.simulateRequest(
     method: String,
+    path: String,
   ): Response<T> {
     var responseData: T? = null
 
     this.handleEvent(
       MatrixRequest().apply {
         this.method = method
+        this.path = path
         this.responseStream = ByteArrayOutputStream()
         finishResponse = { statusCode: Int ->
           assertThat(statusCode).isEqualTo(200)
