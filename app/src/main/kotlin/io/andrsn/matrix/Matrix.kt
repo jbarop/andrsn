@@ -12,25 +12,33 @@ class Matrix {
   private val json = DslJson<Any>()
 
   fun handleEvent(event: MatrixRequest) =
-    try {
-      when (event.method) {
-        "/_matrix/client/versions" -> getSupportedVersions(event)
-        "/_matrix/client/v3/login" -> getLoginTypes(event)
-        "/_matrix/client/v3/register" -> register(event)
-        else -> {
-          event.sendResponse(
-            statusCode = 400,
-            data = ErrorResponse(
-              errcode = "M_NOT_FOUND",
-              error = "No resource was found for this request.",
-            ),
-          )
+    with(event) {
+      try {
+        when {
+          (method == "GET" && path == "/_matrix/client/versions") ->
+            getSupportedVersions(event)
+
+          (method == "GET" && path == "/_matrix/client/v3/login") ->
+            getLoginTypes(event)
+
+          (method == "POST" && path == "/_matrix/client/v3/register") ->
+            register(event)
+
+          else -> {
+            event.sendResponse(
+              statusCode = 400,
+              data = ErrorResponse(
+                errcode = "M_NOT_FOUND",
+                error = "No resource was found for this request.",
+              ),
+            )
+          }
         }
+      } catch (e: Exception) {
+        println("Error handling event: ${e.localizedMessage}")
+        e.printStackTrace()
+        event.finishResponse(500)
       }
-    } catch (e: Exception) {
-      println("Error handling event: ${e.localizedMessage}")
-      e.printStackTrace()
-      event.finishResponse(500)
     }
 
   private fun getSupportedVersions(event: MatrixRequest) =
