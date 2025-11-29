@@ -3,8 +3,8 @@ kotlin = "2.2.21"
 ktlint = "14.0.1"
 junit = "5.13.3"
 assertj = "3.27.6"
-vertx = "5.0.2"
-netty = "4.2.3.Final" # Should align with netty the version that Vert.x uses
+vertx = "5.0.5"
+netty = "4.2.7.Final" # Should align with netty the version that Vert.x uses
 dsljson = "2.0.2"
 
 [libraries]
