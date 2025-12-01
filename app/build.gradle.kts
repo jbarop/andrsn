@@ -25,6 +25,7 @@ dependencies {
   implementation(libs.argon2.jvm)
 
   testImplementation(libs.assertj.core)
+  testImplementation(libs.archunit.junit5)
 }
 
 testing {
