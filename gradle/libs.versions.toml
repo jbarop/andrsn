@@ -6,12 +6,14 @@ assertj = "3.27.6"
 vertx = "5.0.5"
 netty = "4.2.7.Final" # Should align with netty the version that Vert.x uses
 dsljson = "2.0.2"
+argon2 = "2.11"
 
 [libraries]
 vertx-lang-kotlin = { group = "io.vertx", name = "vertx-lang-kotlin", version.ref = "vertx" }
 vertx-web = { group = "io.vertx", name = "vertx-web", version.ref = "vertx" }
 dsljson = { group = "com.dslplatform", name = "dsl-json", version.ref = "dsljson" }
 assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
+argon2-jvm = { group = "de.mkammerer", name = "argon2-jvm", version.ref = "argon2" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

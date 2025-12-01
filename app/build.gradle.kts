@@ -22,6 +22,8 @@ dependencies {
   implementation(libs.dsljson)
   kapt(libs.dsljson)
 
+  implementation(libs.argon2.jvm)
+
   testImplementation(libs.assertj.core)
 }
 

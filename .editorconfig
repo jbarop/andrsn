@@ -14,6 +14,7 @@ ktlint_code_style = ktlint_official
 ktlint_standard_no-blank-line-in-list = disabled
 ktlint_standard_no-empty-first-line-in-class-body = disabled
 ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_comment-wrapping = disabled
 ij_kotlin_name_count_to_use_star_import = 9999
 ij_kotlin_name_count_to_use_star_import_for_members = 9999
 ij_kotlin_packages_to_use_import_on_demand =

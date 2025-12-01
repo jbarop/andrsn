@@ -79,6 +79,7 @@ private class HttpServer(
   private fun Route.matrixHandler() {
     this.handler { ctx ->
       ctx.request().bodyHandler { body ->
+        // In the long term, this allocation should be avoided.
         val request = MatrixRequest()
         request.method = ctx.request().method().name()
         request.path = ctx.request().path()
@@ -94,7 +95,15 @@ private class HttpServer(
             ).end(buffer(request.responseStream.toByteArray()))
         }
 
-        matrix.handleEvent(request)
+        /*
+         * Run blocking for now.
+         * In the long term, this should be replaced by a queuing solution so
+         * that the HTTP server remains asynchronous while the business logic
+         * executes synchronously on a single thread.
+         */
+        vertx.executeBlocking {
+          matrix.handleEvent(request)
+        }
       }
     }
   }
