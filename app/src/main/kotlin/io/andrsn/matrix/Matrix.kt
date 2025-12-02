@@ -2,6 +2,8 @@ package io.andrsn.matrix
 
 import com.dslplatform.json.DslJson
 import io.andrsn.matrix.dto.ErrorResponse
+import io.andrsn.matrix.dto.LoginRequest
+import io.andrsn.matrix.dto.LoginResponse
 import io.andrsn.matrix.dto.LoginTypesResponse
 import io.andrsn.matrix.dto.MatrixRequest
 import io.andrsn.matrix.dto.RegisterRequest
@@ -28,6 +30,9 @@ class Matrix {
 
           (method == "GET" && path == "/_matrix/client/v3/login") ->
             getLoginTypes(event)
+
+          (method == "POST" && path == "/_matrix/client/v3/login") ->
+            login(event)
 
           (method == "GET" && path == "/_matrix/client/v3/register/available")
           -> isUserNameAvailable(event)
@@ -88,6 +93,78 @@ class Matrix {
         ),
       ),
     )
+
+  private fun login(request: MatrixRequest) {
+    val loginReq = json.deserialize(
+      LoginRequest::class.java,
+      ByteArrayInputStream(request.requestBody),
+    ) ?: return request.sendResponse(
+      statusCode = 400,
+      data = ErrorResponse(
+        errcode = "M_BAD_JSON",
+        error = "Could not deserialize login request.",
+      ),
+    )
+
+    if (loginReq.type != "m.login.password") {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN",
+          error = "Bad login type.",
+        ),
+      )
+    }
+
+    if (loginReq.identifier?.type != "m.id.user") {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN",
+          error = "Bad login type.",
+        ),
+      )
+    }
+
+    val username = loginReq.identifier.user
+      ?: return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_PARAM",
+          error = "Missing username.",
+        ),
+      )
+    val password = loginReq.password
+      ?: return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_PARAM",
+          error = "Missing password.",
+        ),
+      )
+    val user = userStore.getUser(username)
+    val valid = passwordHasher.verifyPassword(password, user?.passwordHash)
+
+    if (!valid || user == null) {
+      return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNAUTHORIZED",
+          error = "Invalid username or password.",
+        ),
+      )
+    }
+
+    request.sendResponse(
+      200,
+      LoginResponse(
+        userId = "@${user.username}:localhost",
+        homeServer = "localhost",
+        accessToken = tokenGenerator.generate(),
+        deviceId = tokenGenerator.generate(),
+      ),
+    )
+  }
 
   private fun isUserNameAvailable(request: MatrixRequest) =
     request.sendResponse(

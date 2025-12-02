@@ -9,6 +9,8 @@ class UserStore {
   }
 
   fun usernameExists(username: String): Boolean = users.containsKey(username)
+
+  fun getUser(username: String): User? = users[username]
 }
 
 data class User(

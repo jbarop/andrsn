@@ -11,17 +11,24 @@ class PasswordHasher {
   )
   private val memoryInKb = 65536
   private val parallelism = 1
-  private val iterations = 3 // ~150ms on modern hardware
+  private val iterations = 4 // ~150ms on modern hardware
+  private val dummyHash = hashPassword("dummy_password")
 
   fun hashPassword(password: String): String =
     argon2.hash(iterations, memoryInKb, parallelism, password.toCharArray())
 
   fun verifyPassword(
     password: String,
-    hash: String,
+    hash: String?,
   ): Boolean =
     try {
-      argon2.verify(hash, password.toCharArray())
+      if (hash !== null) {
+        argon2.verify(hash, password.toCharArray())
+      } else {
+        // fake hashing for timing attack prevention
+        argon2.verify(dummyHash, password.toCharArray())
+        false
+      }
     } catch (_: Exception) {
       false
     }

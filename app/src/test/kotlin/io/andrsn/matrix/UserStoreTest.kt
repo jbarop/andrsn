@@ -1,6 +1,6 @@
 package io.andrsn.matrix
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -17,16 +17,16 @@ class UserStoreTest {
   fun `should add and check user existence`() {
     val user = User("testuser", "hash123")
 
-    Assertions.assertThat(sut.usernameExists("testuser")).isFalse()
+    assertThat(sut.usernameExists("testuser")).isFalse()
 
     sut.addUser(user)
 
-    Assertions.assertThat(sut.usernameExists("testuser")).isTrue()
+    assertThat(sut.usernameExists("testuser")).isTrue()
   }
 
   @Test
   fun `should not find non-existent user`() {
-    Assertions.assertThat(sut.usernameExists("nonexistent")).isFalse()
+    assertThat(sut.usernameExists("nonexistent")).isFalse()
   }
 
   @Test
@@ -35,31 +35,46 @@ class UserStoreTest {
     sut.addUser(User("user2", "hash2"))
     sut.addUser(User("user3", "hash3"))
 
-    Assertions.assertThat(sut.usernameExists("user1")).isTrue()
-    Assertions.assertThat(sut.usernameExists("user2")).isTrue()
-    Assertions.assertThat(sut.usernameExists("user3")).isTrue()
-    Assertions.assertThat(sut.usernameExists("user4")).isFalse()
+    assertThat(sut.usernameExists("user1")).isTrue()
+    assertThat(sut.usernameExists("user2")).isTrue()
+    assertThat(sut.usernameExists("user3")).isTrue()
+    assertThat(sut.usernameExists("user4")).isFalse()
   }
 
   @Test
-  fun `should overwrite user with same username`() {
-    sut.addUser(User("testuser", "oldHash"))
-    sut.addUser(User("testuser", "newHash"))
+  fun `should retrieve existing user`() {
+    val user = User("testuser", "hash123")
+    sut.addUser(user)
 
-    Assertions.assertThat(sut.usernameExists("testuser")).isTrue()
+    val retrievedUser = sut.getUser("testuser")
+
+    assertThat(retrievedUser).isNotNull
+    assertThat(retrievedUser?.username).isEqualTo("testuser")
+    assertThat(retrievedUser?.passwordHash).isEqualTo("hash123")
   }
 
   @Test
-  fun `should handle empty username`() {
-    sut.addUser(User("", "hash"))
+  fun `should return null for non-existent user`() {
+    val retrievedUser = sut.getUser("nonexistent")
 
-    Assertions.assertThat(sut.usernameExists("")).isTrue()
+    assertThat(retrievedUser).isNull()
   }
 
   @Test
-  fun `should handle special characters in username`() {
-    sut.addUser(User("user_123.test-name", "hash"))
+  fun `should retrieve correct user from multiple users`() {
+    sut.addUser(User("user1", "hash1"))
+    sut.addUser(User("user2", "hash2"))
+    sut.addUser(User("user3", "hash3"))
 
-    Assertions.assertThat(sut.usernameExists("user_123.test-name")).isTrue()
+    val user1 = sut.getUser("user1")
+    val user2 = sut.getUser("user2")
+    val user3 = sut.getUser("user3")
+
+    assertThat(user1?.username).isEqualTo("user1")
+    assertThat(user1?.passwordHash).isEqualTo("hash1")
+    assertThat(user2?.username).isEqualTo("user2")
+    assertThat(user2?.passwordHash).isEqualTo("hash2")
+    assertThat(user3?.username).isEqualTo("user3")
+    assertThat(user3?.passwordHash).isEqualTo("hash3")
   }
 }

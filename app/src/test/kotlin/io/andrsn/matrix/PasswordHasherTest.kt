@@ -68,4 +68,36 @@ class PasswordHasherTest {
 
     assertThat(sut.verifyPassword(password, hash)).isTrue()
   }
+
+  @Test
+  fun `should reject null hash`() {
+    val result = sut.verifyPassword("password", null)
+
+    assertThat(result).isFalse()
+  }
+
+  @Test
+  fun `should prevent timing attacks with null hash`() {
+    val password = "testPassword123"
+
+    // Measure time for null hash
+    val startNull = System.nanoTime()
+    val resultNull = sut.verifyPassword(password, null)
+    val durationNull = System.nanoTime() - startNull
+
+    // Measure time for invalid hash
+    val invalidHash = sut.hashPassword("different")
+    val startInvalid = System.nanoTime()
+    val resultInvalid = sut.verifyPassword(password, invalidHash)
+    val durationInvalid = System.nanoTime() - startInvalid
+
+    // Both should return false
+    assertThat(resultNull).isFalse()
+    assertThat(resultInvalid).isFalse()
+
+    // Execution times should be kept within the same order of magnitude to
+    // reduce the risk of timing attacks.
+    val ratio = durationNull.toDouble() / durationInvalid.toDouble()
+    assertThat(ratio).isGreaterThan(0.1).isLessThan(10.0)
+  }
 }

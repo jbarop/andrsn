@@ -1,5 +1,7 @@
 package io.andrsn.matrix
 
+import io.andrsn.matrix.MatrixTestUtils.getAuthSession
+import io.andrsn.matrix.MatrixTestUtils.registerUser
 import io.andrsn.matrix.MatrixTestUtils.simulateRequest
 import io.andrsn.matrix.dto.ErrorResponse
 import io.andrsn.matrix.dto.RegisterRequest
@@ -89,7 +91,7 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should reject registration without username`() {
-    val session = getAuthSession()
+    val session = getAuthSession(sut)
 
     val request = RegisterRequest(
       username = null,
@@ -118,7 +120,7 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should reject registration without password`() {
-    val session = getAuthSession()
+    val session = getAuthSession(sut)
 
     val request = RegisterRequest(
       username = "testuser",
@@ -147,9 +149,9 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should reject duplicate username`() {
-    registerUser("testuser", "password123")
+    registerUser(sut, "testuser", "password123")
 
-    val session = getAuthSession()
+    val session = getAuthSession(sut)
     val request = RegisterRequest(
       username = "testuser",
       password = "different_password",
@@ -177,9 +179,9 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should handle multiple registrations`() {
-    val user1 = registerUser("user1", "password1")
-    val user2 = registerUser("user2", "password2")
-    val user3 = registerUser("user3", "password3")
+    val user1 = registerUser(sut, "user1", "password1")
+    val user2 = registerUser(sut, "user2", "password2")
+    val user3 = registerUser(sut, "user3", "password3")
 
     assertThat(user1.userId).isEqualTo("@user1:localhost")
     assertThat(user2.userId).isEqualTo("@user2:localhost")
@@ -217,8 +219,8 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should generate unique tokens for same user registrations`() {
-    val user1 = registerUser("user1", "password")
-    val user2 = registerUser("user2", "password")
+    val user1 = registerUser(sut, "user1", "password")
+    val user2 = registerUser(sut, "user2", "password")
 
     assertThat(user1.accessToken).hasSize(48)
     assertThat(user2.accessToken).hasSize(48)
@@ -231,7 +233,7 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should verify password is hashed`() {
-    val user = registerUser("testuser", "mypassword")
+    val user = registerUser(sut, "testuser", "mypassword")
 
     assertThat(user.accessToken).doesNotContain("mypassword")
     assertThat(user.userId).doesNotContain("mypassword")
@@ -239,7 +241,7 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should not return access token and device ID when inhibitLogin=null`() {
-    val session = getAuthSession()
+    val session = getAuthSession(sut)
 
     val request = RegisterRequest(
       username = "testuser",
@@ -268,7 +270,7 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should not return access token and device ID when inhibitLogin=false`() {
-    val session = getAuthSession()
+    val session = getAuthSession(sut)
 
     val request = RegisterRequest(
       username = "testuser",
@@ -297,7 +299,7 @@ class RegisterIntegrationTest {
 
   @Test
   fun `should not return access token and device ID when inhibitLogin=true`() {
-    val session = getAuthSession()
+    val session = getAuthSession(sut)
 
     val request = RegisterRequest(
       username = "testuser",
@@ -322,50 +324,5 @@ class RegisterIntegrationTest {
     assertThat(response.statusCode).isEqualTo(200)
     assertThat(response.data.accessToken).isNull()
     assertThat(response.data.deviceId).isNull()
-  }
-
-  private fun getAuthSession(): String {
-    val request = RegisterRequest(
-      username = null,
-      password = null,
-      deviceId = null,
-      initialDeviceDisplayName = null,
-      inhibitLogin = null,
-      authentication = null,
-    )
-
-    val response = simulateRequest<RegisterResponse>(
-      matrix = sut,
-      method = "POST",
-      path = "/_matrix/client/v3/register",
-      body = request,
-      expectedStatus = 401,
-    )
-
-    return response.data.session
-  }
-
-  private fun registerUser(
-    username: String,
-    password: String,
-  ): RegisterSuccessResponse {
-    val session = getAuthSession()
-    return simulateRequest<RegisterSuccessResponse>(
-      matrix = sut,
-      method = "POST",
-      path = "/_matrix/client/v3/register",
-      body = RegisterRequest(
-        username = username,
-        password = password,
-        deviceId = null,
-        initialDeviceDisplayName = null,
-        inhibitLogin = null,
-        authentication = RegisterRequest.Authentication(
-          type = "m.login.dummy",
-          session = session,
-        ),
-      ),
-      expectedStatus = 200,
-    ).data
   }
 }
