@@ -163,15 +163,28 @@ class Matrix {
     )
     userStore.addUser(user)
 
-    request.sendResponse(
-      200,
-      RegisterSuccessResponse(
-        userId = "@${user.username}:localhost",
-        homeServer = "localhost",
-        accessToken = tokenGenerator.generate(),
-        deviceId = tokenGenerator.generate(),
-      ),
-    )
+    if (registerReq.inhibitLogin == true) {
+      request.sendResponse(
+        200,
+        RegisterSuccessResponse(
+          userId = "@${user.username}:localhost",
+          homeServer = "localhost",
+          accessToken = null,
+          deviceId = null,
+        ),
+      )
+    } else {
+      request.sendResponse(
+        200,
+        RegisterSuccessResponse(
+          userId = "@${user.username}:localhost",
+          homeServer = "localhost",
+          accessToken = tokenGenerator.generate(),
+          deviceId = tokenGenerator.generate(),
+        ),
+      )
+    }
+
     authenticationSessions.remove(authSession.sessionId)
   }
 

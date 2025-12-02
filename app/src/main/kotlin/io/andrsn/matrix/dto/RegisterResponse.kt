@@ -27,7 +27,7 @@ data class RegisterSuccessResponse(
   @field:JsonAttribute(name = "home_server")
   val homeServer: String,
   @field:JsonAttribute(name = "access_token")
-  val accessToken: String,
+  val accessToken: String?,
   @field:JsonAttribute(name = "device_id")
-  val deviceId: String,
+  val deviceId: String?,
 )

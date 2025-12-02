@@ -237,6 +237,93 @@ class RegisterIntegrationTest {
     assertThat(user.userId).doesNotContain("mypassword")
   }
 
+  @Test
+  fun `should not return access token and device ID when inhibitLogin=null`() {
+    val session = getAuthSession()
+
+    val request = RegisterRequest(
+      username = "testuser",
+      password = "password123",
+      deviceId = null,
+      initialDeviceDisplayName = null,
+      inhibitLogin = null,
+      authentication = RegisterRequest.Authentication(
+        type = "m.login.dummy",
+        session = session,
+      ),
+    )
+
+    val response = simulateRequest<RegisterSuccessResponse>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/register",
+      body = request,
+      expectedStatus = 200,
+    )
+
+    assertThat(response.statusCode).isEqualTo(200)
+    assertThat(response.data.accessToken).isNotNull()
+    assertThat(response.data.deviceId).isNotNull()
+  }
+
+  @Test
+  fun `should not return access token and device ID when inhibitLogin=false`() {
+    val session = getAuthSession()
+
+    val request = RegisterRequest(
+      username = "testuser",
+      password = "password123",
+      deviceId = null,
+      initialDeviceDisplayName = null,
+      inhibitLogin = false,
+      authentication = RegisterRequest.Authentication(
+        type = "m.login.dummy",
+        session = session,
+      ),
+    )
+
+    val response = simulateRequest<RegisterSuccessResponse>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/register",
+      body = request,
+      expectedStatus = 200,
+    )
+
+    assertThat(response.statusCode).isEqualTo(200)
+    assertThat(response.data.accessToken).isNotNull()
+    assertThat(response.data.deviceId).isNotNull()
+  }
+
+  @Test
+  fun `should not return access token and device ID when inhibitLogin=true`() {
+    val session = getAuthSession()
+
+    val request = RegisterRequest(
+      username = "testuser",
+      password = "password123",
+      deviceId = null,
+      initialDeviceDisplayName = null,
+      inhibitLogin = true,
+      authentication = RegisterRequest.Authentication(
+        type = "m.login.dummy",
+        session = session,
+      ),
+    )
+
+    val response = simulateRequest<RegisterSuccessResponse>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/register",
+      body = request,
+      expectedStatus = 200,
+    )
+
+    assertThat(response.statusCode).isEqualTo(200)
+    assertThat(response.data.accessToken).isNull()
+    assertThat(response.data.deviceId).isNull()
+  }
+
   private fun getAuthSession(): String {
     val request = RegisterRequest(
       username = null,
