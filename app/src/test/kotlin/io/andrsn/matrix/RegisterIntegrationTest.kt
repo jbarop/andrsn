@@ -49,7 +49,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = initialRequest,
-      expectedStatus = 401,
     )
 
     assertThat(uiaResponse.statusCode).isEqualTo(401)
@@ -79,7 +78,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = completeRequest,
-      expectedStatus = 200,
     )
 
     assertThat(successResponse.statusCode).isEqualTo(200)
@@ -110,7 +108,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = request,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -139,7 +136,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = request,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -169,7 +165,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = request,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -210,7 +205,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = request,
-      expectedStatus = 401,
     )
 
     assertThat(response.statusCode).isEqualTo(401)
@@ -260,7 +254,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = request,
-      expectedStatus = 200,
     )
 
     assertThat(response.statusCode).isEqualTo(200)
@@ -289,7 +282,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = request,
-      expectedStatus = 200,
     )
 
     assertThat(response.statusCode).isEqualTo(200)
@@ -318,7 +310,6 @@ class RegisterIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = request,
-      expectedStatus = 200,
     )
 
     assertThat(response.statusCode).isEqualTo(200)

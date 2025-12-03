@@ -7,7 +7,6 @@ import io.andrsn.matrix.dto.MatrixRequest
 import io.andrsn.matrix.dto.RegisterRequest
 import io.andrsn.matrix.dto.RegisterResponse
 import io.andrsn.matrix.dto.RegisterSuccessResponse
-import org.assertj.core.api.Assertions.assertThat
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
@@ -24,7 +23,6 @@ object MatrixTestUtils {
    * @param path Request path
    * @param body Optional request body (will be serialized to JSON)
    * @param accessToken Optional access token for authenticated requests
-   * @param expectedStatus Expected HTTP status code (default: 200)
    * @return TestResponse containing status code and deserialized data
    */
   inline fun <reified T> simulateRequest(
@@ -33,7 +31,6 @@ object MatrixTestUtils {
     path: String,
     body: Any? = null,
     accessToken: String? = null,
-    expectedStatus: Int = 200,
   ): TestResponse<T> {
     var actualStatus = 0
     var responseData: T? = null
@@ -52,23 +49,15 @@ object MatrixTestUtils {
         responseStream = ByteArrayOutputStream()
         finishResponse = { statusCode: Int ->
           actualStatus = statusCode
-          if (statusCode == expectedStatus) {
-            responseData = json.deserialize<T>(
-              T::class.java,
-              ByteArrayInputStream(responseStream.toByteArray()),
-            )
-          }
+          responseData = json.deserialize<T>(
+            T::class.java,
+            ByteArrayInputStream(responseStream.toByteArray()),
+          )
         }
       },
     )
-    assertThat(actualStatus)
-      .withFailMessage(
-        "Expected status $expectedStatus but got $actualStatus",
-      ).isEqualTo(expectedStatus)
-    assertThat(responseData).isNotNull
-    val result = TestResponse(actualStatus, responseData)
 
-    return TestResponse(result.statusCode, result.data!!)
+    return TestResponse(actualStatus, responseData!!)
   }
 
   data class TestResponse<T>(
@@ -94,7 +83,6 @@ object MatrixTestUtils {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = request,
-      expectedStatus = 401,
     )
 
     return response.data.session
@@ -125,7 +113,6 @@ object MatrixTestUtils {
           session = session,
         ),
       ),
-      expectedStatus = 200,
     ).data
   }
 
@@ -151,6 +138,5 @@ object MatrixTestUtils {
         deviceId = null,
         initialDeviceDisplayName = null,
       ),
-      expectedStatus = 200,
     ).data
 }

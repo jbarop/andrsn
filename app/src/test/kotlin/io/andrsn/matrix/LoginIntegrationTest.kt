@@ -54,7 +54,6 @@ class LoginIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/login",
       body = loginRequest,
-      expectedStatus = 200,
     )
 
     assertThat(response.statusCode).isEqualTo(200)
@@ -84,7 +83,6 @@ class LoginIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/login",
       body = loginRequest,
-      expectedStatus = 401,
     )
 
     assertThat(response.statusCode).isEqualTo(401)
@@ -110,7 +108,6 @@ class LoginIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/login",
       body = loginRequest,
-      expectedStatus = 401,
     )
 
     assertThat(response.statusCode).isEqualTo(401)
@@ -136,7 +133,6 @@ class LoginIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/login",
       body = loginRequest,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -162,7 +158,6 @@ class LoginIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/login",
       body = loginRequest,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -188,7 +183,6 @@ class LoginIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/login",
       body = loginRequest,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -214,7 +208,6 @@ class LoginIntegrationTest {
       method = "POST",
       path = "/_matrix/client/v3/login",
       body = loginRequest,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)

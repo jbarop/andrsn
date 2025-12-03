@@ -55,7 +55,6 @@ class MatrixTest {
       method = "GET",
       path = "/_matrix/client/v3/account/whoami",
       accessToken = null,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -70,7 +69,6 @@ class MatrixTest {
       method = "GET",
       path = "/_matrix/client/v3/account/whoami",
       accessToken = "invalid_token_xyz",
-      expectedStatus = 401,
     )
 
     assertThat(response.statusCode).isEqualTo(401)
@@ -100,7 +98,6 @@ class MatrixTest {
       method = "POST",
       path = "/_matrix/client/v3/logout",
       accessToken = null,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -115,7 +112,6 @@ class MatrixTest {
       method = "POST",
       path = "/_matrix/client/v3/logout",
       accessToken = "invalid_token_xyz",
-      expectedStatus = 401,
     )
 
     assertThat(response.statusCode).isEqualTo(401)
@@ -163,7 +159,6 @@ class MatrixTest {
         method = "GET",
         path = "/_matrix/client/v3/account/whoami",
         accessToken = login1.accessToken,
-        expectedStatus = 401,
       ).statusCode,
     ).isEqualTo(401)
 
@@ -199,7 +194,6 @@ class MatrixTest {
       method = "POST",
       path = "/_matrix/client/v3/logout/all",
       accessToken = null,
-      expectedStatus = 400,
     )
 
     assertThat(response.statusCode).isEqualTo(400)
@@ -214,7 +208,6 @@ class MatrixTest {
       method = "POST",
       path = "/_matrix/client/v3/logout/all",
       accessToken = "invalid_token_xyz",
-      expectedStatus = 401,
     )
 
     assertThat(response.statusCode).isEqualTo(401)
@@ -262,7 +255,6 @@ class MatrixTest {
         method = "GET",
         path = "/_matrix/client/v3/account/whoami",
         accessToken = login1.accessToken,
-        expectedStatus = 401,
       ).statusCode,
     ).isEqualTo(401)
 
@@ -272,7 +264,6 @@ class MatrixTest {
         method = "GET",
         path = "/_matrix/client/v3/account/whoami",
         accessToken = login2.accessToken,
-        expectedStatus = 401,
       ).statusCode,
     ).isEqualTo(401)
   }
