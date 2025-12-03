@@ -35,6 +35,12 @@ class Matrix {
           (method == "POST" && path == "/_matrix/client/v3/login") ->
             login(event)
 
+          (method == "POST" && path == "/_matrix/client/v3/logout") ->
+            logout(event)
+
+          (method == "POST" && path == "/_matrix/client/v3/logout/all") ->
+            logoutAll(event)
+
           (method == "GET" && path == "/_matrix/client/v3/register/available")
           -> isUserNameAvailable(event)
 
@@ -172,6 +178,62 @@ class Matrix {
         accessToken = newSession.accessToken,
         deviceId = newSession.deviceId,
       ),
+    )
+  }
+
+  private fun logout(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    userSessions.delete(request.accessToken!!)
+
+    request.sendResponse(
+      statusCode = 200,
+      data = emptyMap<String, Any>(),
+    )
+  }
+
+  private fun logoutAll(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    val session = userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    userSessions.deleteAllForUser(session.userId)
+
+    request.sendResponse(
+      statusCode = 200,
+      data = emptyMap<String, Any>(),
     )
   }
 

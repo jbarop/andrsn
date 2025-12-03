@@ -27,6 +27,14 @@ class UserSessions {
   }
 
   fun find(accessToken: String): UserSession? = sessions[accessToken]
+
+  fun delete(accessToken: String) {
+    sessions.remove(accessToken)
+  }
+
+  fun deleteAllForUser(userId: String) {
+    sessions.values.removeIf { it.userId == userId }
+  }
 }
 
 data class UserSession(

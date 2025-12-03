@@ -77,4 +77,203 @@ class MatrixTest {
     assertThat(response.data.errcode).isEqualTo("M_UNKNOWN_TOKEN")
     assertThat(response.data.error).contains("Unrecognised access token")
   }
+
+  @Test
+  fun `logout should succeed with valid token`() {
+    registerUser(sut, "testuser", "password123")
+    val loginResponse = loginUser(sut, "testuser", "password123")
+
+    val response = simulateRequest<Map<String, Any>>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/logout",
+      accessToken = loginResponse.accessToken,
+    )
+
+    assertThat(response.statusCode).isEqualTo(200)
+  }
+
+  @Test
+  fun `logout should reject request without token`() {
+    val response = simulateRequest<ErrorResponse>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/logout",
+      accessToken = null,
+      expectedStatus = 400,
+    )
+
+    assertThat(response.statusCode).isEqualTo(400)
+    assertThat(response.data.errcode).isEqualTo("M_MISSING_TOKEN")
+    assertThat(response.data.error).contains("Missing access token")
+  }
+
+  @Test
+  fun `logout should reject request with invalid token`() {
+    val response = simulateRequest<ErrorResponse>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/logout",
+      accessToken = "invalid_token_xyz",
+      expectedStatus = 401,
+    )
+
+    assertThat(response.statusCode).isEqualTo(401)
+    assertThat(response.data.errcode).isEqualTo("M_UNKNOWN_TOKEN")
+    assertThat(response.data.error).contains("Unrecognised access token")
+  }
+
+  @Test
+  fun `logout should invalidate only the current user session`() {
+    registerUser(sut, "testuser", "password123")
+    val login1 = loginUser(sut, "testuser", "password123")
+    val login2 = loginUser(sut, "testuser", "password123")
+
+    // Verify both tokens work
+    assertThat(
+      simulateRequest<WhoAmIResponse>(
+        matrix = sut,
+        method = "GET",
+        path = "/_matrix/client/v3/account/whoami",
+        accessToken = login1.accessToken,
+      ).statusCode,
+    ).isEqualTo(200)
+
+    assertThat(
+      simulateRequest<WhoAmIResponse>(
+        matrix = sut,
+        method = "GET",
+        path = "/_matrix/client/v3/account/whoami",
+        accessToken = login2.accessToken,
+      ).statusCode,
+    ).isEqualTo(200)
+
+    // Logout with first token
+    simulateRequest<Map<String, Any>>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/logout",
+      accessToken = login1.accessToken,
+    )
+
+    // Only the first token should be invalidated
+    assertThat(
+      simulateRequest<ErrorResponse>(
+        matrix = sut,
+        method = "GET",
+        path = "/_matrix/client/v3/account/whoami",
+        accessToken = login1.accessToken,
+        expectedStatus = 401,
+      ).statusCode,
+    ).isEqualTo(401)
+
+    assertThat(
+      simulateRequest<WhoAmIResponse>(
+        matrix = sut,
+        method = "GET",
+        path = "/_matrix/client/v3/account/whoami",
+        accessToken = login2.accessToken,
+      ).statusCode,
+    ).isEqualTo(200)
+  }
+
+  @Test
+  fun `logout-all should succeed with valid token`() {
+    registerUser(sut, "testuser", "password123")
+    val loginResponse = loginUser(sut, "testuser", "password123")
+
+    val response = simulateRequest<Map<String, Any>>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/logout/all",
+      accessToken = loginResponse.accessToken,
+    )
+
+    assertThat(response.statusCode).isEqualTo(200)
+  }
+
+  @Test
+  fun `logout-all should reject request without token`() {
+    val response = simulateRequest<ErrorResponse>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/logout/all",
+      accessToken = null,
+      expectedStatus = 400,
+    )
+
+    assertThat(response.statusCode).isEqualTo(400)
+    assertThat(response.data.errcode).isEqualTo("M_MISSING_TOKEN")
+    assertThat(response.data.error).contains("Missing access token")
+  }
+
+  @Test
+  fun `logout-all should reject request with invalid token`() {
+    val response = simulateRequest<ErrorResponse>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/logout/all",
+      accessToken = "invalid_token_xyz",
+      expectedStatus = 401,
+    )
+
+    assertThat(response.statusCode).isEqualTo(401)
+    assertThat(response.data.errcode).isEqualTo("M_UNKNOWN_TOKEN")
+    assertThat(response.data.error).contains("Unrecognised access token")
+  }
+
+  @Test
+  fun `logout-all should invalidate all user sessions`() {
+    registerUser(sut, "testuser", "password123")
+    val login1 = loginUser(sut, "testuser", "password123")
+    val login2 = loginUser(sut, "testuser", "password123")
+
+    // Verify both tokens work
+    assertThat(
+      simulateRequest<WhoAmIResponse>(
+        matrix = sut,
+        method = "GET",
+        path = "/_matrix/client/v3/account/whoami",
+        accessToken = login1.accessToken,
+      ).statusCode,
+    ).isEqualTo(200)
+
+    assertThat(
+      simulateRequest<WhoAmIResponse>(
+        matrix = sut,
+        method = "GET",
+        path = "/_matrix/client/v3/account/whoami",
+        accessToken = login2.accessToken,
+      ).statusCode,
+    ).isEqualTo(200)
+
+    // Logout-all with first token
+    simulateRequest<Map<String, Any>>(
+      matrix = sut,
+      method = "POST",
+      path = "/_matrix/client/v3/logout/all",
+      accessToken = login1.accessToken,
+    )
+
+    // Both tokens should be invalidated
+    assertThat(
+      simulateRequest<ErrorResponse>(
+        matrix = sut,
+        method = "GET",
+        path = "/_matrix/client/v3/account/whoami",
+        accessToken = login1.accessToken,
+        expectedStatus = 401,
+      ).statusCode,
+    ).isEqualTo(401)
+
+    assertThat(
+      simulateRequest<ErrorResponse>(
+        matrix = sut,
+        method = "GET",
+        path = "/_matrix/client/v3/account/whoami",
+        accessToken = login2.accessToken,
+        expectedStatus = 401,
+      ).statusCode,
+    ).isEqualTo(401)
+  }
 }

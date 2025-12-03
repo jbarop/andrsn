@@ -113,4 +113,80 @@ class UserSessionsTest {
 
     assertThat(session.createdAt).isBetween(beforeCreation, afterCreation)
   }
+
+  @Test
+  fun `should delete session by access token`() {
+    val session = sut.create(
+      userId = "@user:localhost",
+      deviceId = "device123",
+    )
+
+    assertThat(sut.find(session.accessToken)).isNotNull()
+
+    sut.delete(session.accessToken)
+
+    assertThat(sut.find(session.accessToken)).isNull()
+  }
+
+  @Test
+  fun `should not affect other sessions when deleting one`() {
+    val session1 = sut.create(
+      userId = "@user1:localhost",
+      deviceId = "device1",
+    )
+    val session2 = sut.create(
+      userId = "@user2:localhost",
+      deviceId = "device2",
+    )
+
+    sut.delete(session1.accessToken)
+
+    assertThat(sut.find(session1.accessToken)).isNull()
+    assertThat(sut.find(session2.accessToken)).isNotNull()
+  }
+
+  @Test
+  fun `should handle deleting non-existent session`() {
+    // Should not throw exception
+    sut.delete("non_existent_token")
+  }
+
+  @Test
+  fun `should delete all sessions for user`() {
+    val session1 = sut.create(
+      userId = "@user:localhost",
+      deviceId = "device1",
+    )
+    val session2 = sut.create(
+      userId = "@user:localhost",
+      deviceId = "device2",
+    )
+    val session3 = sut.create(
+      userId = "@user:localhost",
+      deviceId = "device3",
+    )
+
+    sut.deleteAllForUser("@user:localhost")
+
+    assertThat(sut.find(session1.accessToken)).isNull()
+    assertThat(sut.find(session2.accessToken)).isNull()
+    assertThat(sut.find(session3.accessToken)).isNull()
+  }
+
+  @Test
+  fun `should only delete sessions for specified user`() {
+    val user1Session1 = sut.create(
+      userId = "@user1:localhost",
+      deviceId = "device1",
+    )
+    val user2Session = sut.create(
+      userId = "@user2:localhost",
+      deviceId = "device3",
+    )
+
+    sut.deleteAllForUser("@user1:localhost")
+
+    assertThat(sut.find(user1Session1.accessToken)).isNull()
+    assertThat(sut.find(user2Session.accessToken)).isNotNull
+  }
 }
