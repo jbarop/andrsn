@@ -83,6 +83,8 @@ private class HttpServer(
         val request = MatrixRequest()
         request.method = ctx.request().method().name()
         request.path = ctx.request().path()
+        request.accessToken =
+          extractAccessToken(ctx.request().getHeader(AUTHORIZATION))
         request.requestBody = body.bytes
         request.responseStream = ByteArrayOutputStream()
         request.finishResponse = { statusCode: Int ->
@@ -106,6 +108,16 @@ private class HttpServer(
         }
       }
     }
+  }
+
+  private fun extractAccessToken(authorizationHeader: String?): String? {
+    if (authorizationHeader == null ||
+      !authorizationHeader.startsWith("Bearer ")
+    ) {
+      return null
+    }
+    // Avoid allocation by using CharSequence?
+    return authorizationHeader.substring("Bearer ".length)
   }
 
   private fun logRequestHandler(): Handler<RoutingContext> =

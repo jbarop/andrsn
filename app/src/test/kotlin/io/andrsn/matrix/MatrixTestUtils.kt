@@ -23,6 +23,7 @@ object MatrixTestUtils {
    * @param method HTTP method (GET, POST, etc.)
    * @param path Request path
    * @param body Optional request body (will be serialized to JSON)
+   * @param accessToken Optional access token for authenticated requests
    * @param expectedStatus Expected HTTP status code (default: 200)
    * @return TestResponse containing status code and deserialized data
    */
@@ -31,6 +32,7 @@ object MatrixTestUtils {
     method: String,
     path: String,
     body: Any? = null,
+    accessToken: String? = null,
     expectedStatus: Int = 200,
   ): TestResponse<T> {
     var actualStatus = 0
@@ -39,6 +41,7 @@ object MatrixTestUtils {
       MatrixRequest().apply<MatrixRequest> {
         this.method = method
         this.path = path
+        this.accessToken = accessToken
         requestBody = if (body != null) {
           val out = ByteArrayOutputStream()
           json.serialize(body, out)

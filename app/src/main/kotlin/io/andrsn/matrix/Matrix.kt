@@ -11,15 +11,16 @@ import io.andrsn.matrix.dto.RegisterResponse
 import io.andrsn.matrix.dto.RegisterSuccessResponse
 import io.andrsn.matrix.dto.UsernameAvailableResponse
 import io.andrsn.matrix.dto.VersionsResponse
+import io.andrsn.matrix.dto.WhoAmIResponse
 import java.io.ByteArrayInputStream
 
 class Matrix {
 
   private val json = DslJson<Any>()
   private val authenticationSessions = AuthenticationSessions()
+  private val userSessions = UserSessions()
   private val passwordHasher = PasswordHasher()
   private val userStore = UserStore()
-  private val tokenGenerator = TokenGenerator
 
   fun handleEvent(event: MatrixRequest) =
     with(event) {
@@ -39,6 +40,9 @@ class Matrix {
 
           (method == "POST" && path == "/_matrix/client/v3/register") ->
             register(event)
+
+          (method == "GET" && path == "/_matrix/client/v3/account/whoami") ->
+            whoAmI(event)
 
           else -> {
             event.sendResponse(
@@ -155,13 +159,18 @@ class Matrix {
       )
     }
 
+    val newSession = userSessions.create(
+      userId = "@${user.username}:localhost",
+      deviceId = TokenGenerator.generate(),
+    )
+
     request.sendResponse(
-      200,
-      LoginResponse(
-        userId = "@${user.username}:localhost",
+      statusCode = 200,
+      data = LoginResponse(
+        userId = newSession.userId,
         homeServer = "localhost",
-        accessToken = tokenGenerator.generate(),
-        deviceId = tokenGenerator.generate(),
+        accessToken = newSession.accessToken,
+        deviceId = newSession.deviceId,
       ),
     )
   }
@@ -251,18 +260,51 @@ class Matrix {
         ),
       )
     } else {
+      val newSession = userSessions.create(
+        userId = "@${user.username}:localhost",
+        deviceId = TokenGenerator.generate(),
+      )
       request.sendResponse(
-        200,
-        RegisterSuccessResponse(
-          userId = "@${user.username}:localhost",
+        statusCode = 200,
+        data = RegisterSuccessResponse(
+          userId = newSession.userId,
           homeServer = "localhost",
-          accessToken = tokenGenerator.generate(),
-          deviceId = tokenGenerator.generate(),
+          accessToken = newSession.accessToken,
+          deviceId = newSession.deviceId,
         ),
       )
     }
 
     authenticationSessions.remove(authSession.sessionId)
+  }
+
+  private fun whoAmI(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    val session = userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    request.sendResponse(
+      statusCode = 200,
+      data = WhoAmIResponse(
+        userId = session.userId,
+        deviceId = session.deviceId,
+      ),
+    )
   }
 
   private fun MatrixRequest.sendResponse(
