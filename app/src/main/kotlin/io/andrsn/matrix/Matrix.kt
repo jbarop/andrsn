@@ -22,6 +22,17 @@ class Matrix {
   private val passwordHasher = PasswordHasher()
   private val userStore = UserStore()
 
+  init {
+    // Create test user for testing
+    userStore.addUser(
+      User(
+        username = "test",
+        passwordHash = passwordHasher.hashPassword("test"),
+      ),
+    )
+    println("Test user 'test:test' created")
+  }
+
   fun handleEvent(event: MatrixRequest) =
     with(event) {
       try {
