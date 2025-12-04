@@ -44,8 +44,11 @@ private class HttpServer(
   private val matrix: Matrix,
 ) : AbstractVerticle() {
 
+  private lateinit var baseUrl: String
+
   override fun start() {
     val bindAddress = inetSocketAddress(8443, "localhost")
+    baseUrl = "https://${bindAddress.host()}:${bindAddress.port()}"
     val options = HttpServerOptions()
       .setSsl(true)
       .setHost(bindAddress.host())
@@ -72,8 +75,28 @@ private class HttpServer(
   private fun createRouter() =
     router(vertx).apply {
       route().handler(corsHandler())
+      get("/.well-known/matrix/client").wellKnownHandler()
       route().matrixHandler()
     }
+
+  private fun Route.wellKnownHandler() {
+    this.handler { ctx ->
+      ctx
+        .response()
+        .setStatusCode(200)
+        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .end(
+          """
+          {
+            "m.homeserver": {
+              "base_url": "$baseUrl"
+              "server_name": "localhost"
+            }
+          }
+          """.trimIndent(),
+        )
+    }
+  }
 
   private fun Route.matrixHandler() {
     this.handler { ctx ->
