@@ -61,6 +61,37 @@ class Matrix {
           (method == "GET" && path == "/_matrix/client/v3/account/whoami") ->
             whoAmI(event)
 
+          (method == "GET" && path == "/_matrix/client/v3/sync") ->
+            sync(event)
+
+          (method == "GET" && path == "/_matrix/client/v3/pushrules/") ->
+            getPushRules(event)
+
+          (
+            method == "POST" &&
+              path.startsWith("/_matrix/client/v3/user/") &&
+              path.endsWith("/filter")
+          ) ->
+            createFilter(event)
+
+          (method == "POST" && path == "/_matrix/client/v3/keys/upload") ->
+            keysUpload(event)
+
+          (method == "POST" && path == "/_matrix/client/v3/keys/query") ->
+            keysQuery(event)
+
+          (method == "POST" && path == "/_matrix/client/v3/keys/claim") ->
+            keysClaim(event)
+
+          (method == "GET" && path == "/_matrix/client/v3/capabilities") ->
+            getCapabilities(event)
+
+          (
+            path.startsWith("/_matrix/client/v3/user/") &&
+              path.contains("/account_data/")
+          ) ->
+            handleAccountData(event)
+
           (method == "GET" && path == "/_matrix/client/v3/thirdparty/protocols")
           -> thirdPartyProtocols(event)
 
@@ -389,6 +420,273 @@ class Matrix {
     )
   }
 
+  private fun sync(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    request.sendRawJsonResponse(
+      statusCode = 200,
+      json =
+        """
+        {
+          "next_batch": "s0",
+          "rooms": {
+            "join": {},
+            "invite": {},
+            "leave": {}
+          },
+          "presence": {"events": []},
+          "account_data": {"events": []}
+        }
+        """.trimIndent(),
+    )
+  }
+
+  private fun createFilter(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    request.sendRawJsonResponse(
+      statusCode = 200,
+      json = """{"filter_id":"0"}""",
+    )
+  }
+
+  private fun keysUpload(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    request.sendRawJsonResponse(
+      statusCode = 200,
+      json = """{"one_time_key_counts":{}}""",
+    )
+  }
+
+  private fun keysQuery(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    request.sendRawJsonResponse(
+      statusCode = 200,
+      json = """{"device_keys":{}}""",
+    )
+  }
+
+  private fun keysClaim(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    request.sendRawJsonResponse(
+      statusCode = 200,
+      json = """{"one_time_keys":{}}""",
+    )
+  }
+
+  private fun getCapabilities(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    request.sendRawJsonResponse(
+      statusCode = 200,
+      json =
+        """
+        {
+          "capabilities": {
+            "m.change_password": {"enabled": false},
+            "m.room_versions": {
+              "available": {"1": "stable"},
+              "default": "1"
+            }
+          }
+        }
+        """.trimIndent(),
+    )
+  }
+
+  private fun handleAccountData(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    when (request.method) {
+      "PUT" -> {
+        request.sendRawJsonResponse(
+          statusCode = 200,
+          json = """{}""",
+        )
+      }
+
+      "GET" -> {
+        request.sendResponse(
+          statusCode = 404,
+          data = ErrorResponse(
+            errcode = "M_NOT_FOUND",
+            error = "Account data not found.",
+          ),
+        )
+      }
+
+      else -> {
+        request.sendResponse(
+          statusCode = 405,
+          data = ErrorResponse(
+            errcode = "M_UNRECOGNIZED",
+            error = "Method not allowed.",
+          ),
+        )
+      }
+    }
+  }
+
+  private fun getPushRules(request: MatrixRequest) {
+    if (request.accessToken == null) {
+      return request.sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+    }
+
+    userSessions.find(request.accessToken!!)
+      ?: return request.sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+
+    // Stub: Return empty push rules
+    request.sendRawJsonResponse(
+      statusCode = 200,
+      json =
+        """
+        {
+          "global": {
+            "override": [],
+            "content": [],
+            "room": [],
+            "sender": [],
+            "underride": []
+          }
+        }
+        """.trimIndent(),
+    )
+  }
+
   private fun thirdPartyProtocols(request: MatrixRequest) {
     request.sendResponse(
       statusCode = 200,
@@ -411,6 +709,14 @@ class Matrix {
     data: Any,
   ) {
     json.serialize(data, responseStream)
+    this.finishResponse(statusCode)
+  }
+
+  private fun MatrixRequest.sendRawJsonResponse(
+    statusCode: Int,
+    json: String,
+  ) {
+    responseStream.write(json.toByteArray())
     this.finishResponse(statusCode)
   }
 }
