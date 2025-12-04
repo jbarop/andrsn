@@ -233,24 +233,7 @@ class Matrix {
   }
 
   private fun logout(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     userSessions.delete(request.accessToken!!)
 
@@ -261,24 +244,7 @@ class Matrix {
   }
 
   private fun logoutAll(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    val session = userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    val session = request.getAccessToken() ?: return
 
     userSessions.deleteAllForUser(session.userId)
 
@@ -392,24 +358,7 @@ class Matrix {
   }
 
   private fun whoAmI(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    val session = userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    val session = request.getAccessToken() ?: return
 
     request.sendResponse(
       statusCode = 200,
@@ -421,24 +370,7 @@ class Matrix {
   }
 
   private fun sync(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     request.sendRawJsonResponse(
       statusCode = 200,
@@ -459,24 +391,7 @@ class Matrix {
   }
 
   private fun createFilter(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     request.sendRawJsonResponse(
       statusCode = 200,
@@ -485,24 +400,7 @@ class Matrix {
   }
 
   private fun keysUpload(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     request.sendRawJsonResponse(
       statusCode = 200,
@@ -511,24 +409,7 @@ class Matrix {
   }
 
   private fun keysQuery(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     request.sendRawJsonResponse(
       statusCode = 200,
@@ -537,24 +418,7 @@ class Matrix {
   }
 
   private fun keysClaim(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     request.sendRawJsonResponse(
       statusCode = 200,
@@ -563,24 +427,7 @@ class Matrix {
   }
 
   private fun getCapabilities(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     request.sendRawJsonResponse(
       statusCode = 200,
@@ -600,24 +447,7 @@ class Matrix {
   }
 
   private fun handleAccountData(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     when (request.method) {
       "PUT" -> {
@@ -650,24 +480,7 @@ class Matrix {
   }
 
   private fun getPushRules(request: MatrixRequest) {
-    if (request.accessToken == null) {
-      return request.sendResponse(
-        statusCode = 400,
-        data = ErrorResponse(
-          errcode = "M_MISSING_TOKEN",
-          error = "Missing access token.",
-        ),
-      )
-    }
-
-    userSessions.find(request.accessToken!!)
-      ?: return request.sendResponse(
-        statusCode = 401,
-        data = ErrorResponse(
-          errcode = "M_UNKNOWN_TOKEN",
-          error = "Unrecognised access token.",
-        ),
-      )
+    request.getAccessToken() ?: return
 
     // Stub: Return empty push rules
     request.sendRawJsonResponse(
@@ -702,6 +515,33 @@ class Matrix {
         error = "No current backup version.",
       ),
     )
+  }
+
+  private fun MatrixRequest.getAccessToken(): UserSession? {
+    if (accessToken == null) {
+      sendResponse(
+        statusCode = 400,
+        data = ErrorResponse(
+          errcode = "M_MISSING_TOKEN",
+          error = "Missing access token.",
+        ),
+      )
+      return null
+    }
+
+    val session = userSessions.find(accessToken!!)
+    if (session == null) {
+      sendResponse(
+        statusCode = 401,
+        data = ErrorResponse(
+          errcode = "M_UNKNOWN_TOKEN",
+          error = "Unrecognised access token.",
+        ),
+      )
+      return null
+    }
+
+    return session
   }
 
   private fun MatrixRequest.sendResponse(
