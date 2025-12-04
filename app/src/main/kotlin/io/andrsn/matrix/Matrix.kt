@@ -50,6 +50,12 @@ class Matrix {
           (method == "GET" && path == "/_matrix/client/v3/account/whoami") ->
             whoAmI(event)
 
+          (method == "GET" && path == "/_matrix/client/v3/thirdparty/protocols")
+          -> thirdPartyProtocols(event)
+
+          (method == "GET" && path == "/_matrix/client/v3/room_keys/version") ->
+            roomKeysVersion(event)
+
           else -> {
             if (!path.contains("client/unstable")) {
               println("Unknown request: $method $path")
@@ -368,6 +374,23 @@ class Matrix {
       data = WhoAmIResponse(
         userId = session.userId,
         deviceId = session.deviceId,
+      ),
+    )
+  }
+
+  private fun thirdPartyProtocols(request: MatrixRequest) {
+    request.sendResponse(
+      statusCode = 200,
+      data = emptyMap<String, Any>(),
+    )
+  }
+
+  private fun roomKeysVersion(request: MatrixRequest) {
+    request.sendResponse(
+      statusCode = 404,
+      data = ErrorResponse(
+        errcode = "M_NOT_FOUND",
+        error = "No current backup version.",
       ),
     )
   }
