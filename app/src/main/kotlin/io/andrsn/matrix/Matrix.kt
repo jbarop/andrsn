@@ -51,6 +51,9 @@ class Matrix {
             whoAmI(event)
 
           else -> {
+            if (!path.contains("client/unstable")) {
+              println("Unknown request: $method $path")
+            }
             event.sendResponse(
               statusCode = 404,
               data = ErrorResponse(

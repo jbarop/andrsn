@@ -72,7 +72,6 @@ private class HttpServer(
   private fun createRouter() =
     router(vertx).apply {
       route().handler(corsHandler())
-      route().handler(logRequestHandler())
       route().matrixHandler()
     }
 
@@ -119,12 +118,6 @@ private class HttpServer(
     // Avoid allocation by using CharSequence?
     return authorizationHeader.substring("Bearer ".length)
   }
-
-  private fun logRequestHandler(): Handler<RoutingContext> =
-    Handler { ctx ->
-      println("Request: ${ctx.request().method()} ${ctx.request().uri()}")
-      ctx.next()
-    }
 
   private fun corsHandler(): Handler<RoutingContext> =
     Handler { ctx ->
