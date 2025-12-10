@@ -370,16 +370,66 @@ class Matrix {
   }
 
   private fun sync(request: MatrixRequest) {
-    request.getAccessToken() ?: return
+    val session = request.getAccessToken() ?: return
 
+    val now = System.currentTimeMillis()
     request.sendRawJsonResponse(
       statusCode = 200,
       json =
         """
         {
-          "next_batch": "s0",
+          "next_batch": "s1",
           "rooms": {
-            "join": {},
+            "join": {
+              "!testroom:localhost": {
+                "timeline": {
+                  "events": [],
+                  "limited": false,
+                  "prev_batch": "t0"
+                },
+                "state": {
+                  "events": [
+                    {
+                      "type": "m.room.create",
+                      "state_key": "",
+                      "content": {
+                        "creator": "${session.userId}",
+                        "room_version": "1"
+                      },
+                      "sender": "${session.userId}",
+                      "origin_server_ts": $now,
+                      "event_id": "${'$'}create:localhost"
+                    },
+                    {
+                      "type": "m.room.member",
+                      "state_key": "${session.userId}",
+                      "content": {
+                        "membership": "join",
+                        "displayname": "${session.userId}"
+                      },
+                      "sender": "${session.userId}",
+                      "origin_server_ts": $now,
+                      "event_id": "${'$'}member:localhost"
+                    },
+                    {
+                      "type": "m.room.name",
+                      "state_key": "",
+                      "content": {
+                        "name": "Test Room"
+                      },
+                      "sender": "${session.userId}",
+                      "origin_server_ts": $now,
+                      "event_id": "${'$'}name:localhost"
+                    }
+                  ]
+                },
+                "unread_notifications": {
+                  "notification_count": 0,
+                  "highlight_count": 0
+                },
+                "summary": {}
+              }
+            },
             "invite": {},
             "leave": {}
           },
