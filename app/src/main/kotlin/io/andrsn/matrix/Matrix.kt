@@ -9,14 +9,21 @@ import io.andrsn.matrix.dto.MatrixRequest
 import io.andrsn.matrix.dto.RegisterRequest
 import io.andrsn.matrix.dto.RegisterResponse
 import io.andrsn.matrix.dto.RegisterSuccessResponse
+import io.andrsn.matrix.dto.SyncResponse
+import io.andrsn.matrix.dto.SyncRoom
+import io.andrsn.matrix.dto.SyncRoomEvent
+import io.andrsn.matrix.dto.SyncRoomState
+import io.andrsn.matrix.dto.SyncRoomTimeline
+import io.andrsn.matrix.dto.SyncRooms
 import io.andrsn.matrix.dto.UsernameAvailableResponse
 import io.andrsn.matrix.dto.VersionsResponse
 import io.andrsn.matrix.dto.WhoAmIResponse
 import java.io.ByteArrayInputStream
+import java.time.LocalDate
 
 class Matrix {
 
-  private val json = DslJson<Any>()
+  private val json = DslJson(DslJson.Settings<Any>().includeServiceLoader())
   private val authenticationSessions = AuthenticationSessions()
   private val userSessions = UserSessions()
   private val passwordHasher = PasswordHasher()
@@ -372,71 +379,68 @@ class Matrix {
   private fun sync(request: MatrixRequest) {
     val session = request.getAccessToken() ?: return
 
-    val now = System.currentTimeMillis()
-    request.sendRawJsonResponse(
+    val roomId = "!testroom:localhost"
+    val roomName = "Test Room"
+    val roomCreated = LocalDate
+      .of(2025, 1, 1)
+      .atStartOfDay()
+      .toInstant(java.time.ZoneOffset.UTC)
+      .toEpochMilli()
+
+    request.sendResponse(
       statusCode = 200,
-      json =
-        """
-        {
-          "next_batch": "s1",
-          "rooms": {
-            "join": {
-              "!testroom:localhost": {
-                "timeline": {
-                  "events": [],
-                  "limited": false,
-                  "prev_batch": "t0"
-                },
-                "state": {
-                  "events": [
-                    {
-                      "type": "m.room.create",
-                      "state_key": "",
-                      "content": {
-                        "creator": "${session.userId}",
-                        "room_version": "1"
-                      },
-                      "sender": "${session.userId}",
-                      "origin_server_ts": $now,
-                      "event_id": "${'$'}create:localhost"
-                    },
-                    {
-                      "type": "m.room.member",
-                      "state_key": "${session.userId}",
-                      "content": {
-                        "membership": "join",
-                        "displayname": "${session.userId}"
-                      },
-                      "sender": "${session.userId}",
-                      "origin_server_ts": $now,
-                      "event_id": "${'$'}member:localhost"
-                    },
-                    {
-                      "type": "m.room.name",
-                      "state_key": "",
-                      "content": {
-                        "name": "Test Room"
-                      },
-                      "sender": "${session.userId}",
-                      "origin_server_ts": $now,
-                      "event_id": "${'$'}name:localhost"
-                    }
-                  ]
-                },
-                "unread_notifications": {
-                  "notification_count": 0,
-                  "highlight_count": 0
-                },
-                "summary": {}
-              }
-            },
-            "invite": {},
-            "leave": {}
-          },
-          "presence": {"events": []},
-          "account_data": {"events": []}
-        }
-        """.trimIndent(),
+      data = SyncResponse(
+        nextBatch = "s1",
+        rooms = SyncRooms(
+          join = mapOf(
+            roomId to SyncRoom(
+              timeline = SyncRoomTimeline(
+                events = emptyList(),
+                limited = false,
+                prevBatch = "t0",
+              ),
+              state = SyncRoomState(
+                events = listOf(
+                  SyncRoomEvent(
+                    type = "m.room.create",
+                    stateKey = "",
+                    content = mapOf(
+                      "creator" to session.userId,
+                      "roomVersion" to "1",
+                    ),
+                    sender = session.userId,
+                    originServerTs = roomCreated,
+                    eventId = $$"$room_created:localhost",
+                  ),
+                  SyncRoomEvent(
+                    type = "m.room.member",
+                    stateKey = session.userId,
+                    content = mapOf(
+                      "membership" to "join",
+                      "displayname" to session.userId,
+                    ),
+                    sender = session.userId,
+                    originServerTs = roomCreated,
+                    eventId = $$"$member:localhost",
+                  ),
+                  SyncRoomEvent(
+                    type = "m.room.name",
+                    stateKey = "",
+                    content = mapOf(
+                      "name" to roomName,
+                    ),
+                    sender = session.userId,
+                    originServerTs = roomCreated,
+                    eventId = $$"$name:localhost",
+                  ),
+                ),
+              ),
+            ),
+          ),
+          invite = emptyMap(),
+          leave = emptyMap(),
+        ),
+      ),
     )
   }
 
