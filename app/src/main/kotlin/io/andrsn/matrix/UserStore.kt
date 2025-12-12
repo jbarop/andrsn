@@ -4,8 +4,9 @@ class UserStore {
 
   private val users = HashMap<String, User>()
 
-  fun addUser(user: User) {
+  fun addUser(user: User): User {
     users[user.username] = user
+    return user
   }
 
   fun usernameExists(username: String): Boolean = users.containsKey(username)

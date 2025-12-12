@@ -16,7 +16,7 @@ class MatrixTest {
 
   @BeforeEach
   fun setup() {
-    sut = Matrix()
+    sut = Matrix("localhost")
   }
 
   @Test

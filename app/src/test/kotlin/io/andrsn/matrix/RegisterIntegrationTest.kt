@@ -18,7 +18,7 @@ class RegisterIntegrationTest {
 
   @BeforeEach
   fun setup() {
-    sut = Matrix()
+    sut = Matrix("localhost")
   }
 
   @Test

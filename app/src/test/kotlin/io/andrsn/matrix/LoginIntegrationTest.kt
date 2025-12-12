@@ -17,7 +17,7 @@ class LoginIntegrationTest {
 
   @BeforeEach
   fun setup() {
-    sut = Matrix()
+    sut = Matrix("localhost")
   }
 
   @Test

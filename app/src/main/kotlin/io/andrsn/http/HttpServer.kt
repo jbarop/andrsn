@@ -90,7 +90,7 @@ private class HttpServer(
           {
             "m.homeserver": {
               "base_url": "$baseUrl"
-              "server_name": "localhost"
+              "server_name": "${matrix.serverName}
             }
           }
           """.trimIndent(),

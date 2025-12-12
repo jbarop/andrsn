@@ -19,25 +19,37 @@ import io.andrsn.matrix.dto.UsernameAvailableResponse
 import io.andrsn.matrix.dto.VersionsResponse
 import io.andrsn.matrix.dto.WhoAmIResponse
 import java.io.ByteArrayInputStream
-import java.time.LocalDate
+import java.time.Instant
 
-class Matrix {
+class Matrix(
+  val serverName: String,
+) {
 
   private val json = DslJson(DslJson.Settings<Any>().includeServiceLoader())
   private val authenticationSessions = AuthenticationSessions()
   private val userSessions = UserSessions()
   private val passwordHasher = PasswordHasher()
   private val userStore = UserStore()
+  private val roomStore = RoomStore()
 
   init {
-    // Create test user for testing
-    userStore.addUser(
+    val testUser = userStore.addUser(
       User(
-        username = "test",
+        username = "@test:$serverName",
         passwordHash = passwordHasher.hashPassword("test"),
       ),
     )
-    println("Test user 'test:test' created")
+    println("User '${testUser.username}' created.")
+
+    val testRoom = roomStore.createRoom(
+      Room(
+        roomId = "!testroom:$serverName",
+        roomName = "Test room",
+        creator = testUser.username,
+        createdAt = Instant.now().toEpochMilli(),
+      ),
+    )
+    println("Room '${testRoom.roomId}' created.")
   }
 
   fun handleEvent(event: MatrixRequest) =
@@ -378,14 +390,7 @@ class Matrix {
 
   private fun sync(request: MatrixRequest) {
     val session = request.getAccessToken() ?: return
-
-    val roomId = "!testroom:localhost"
-    val roomName = "Test Room"
-    val roomCreated = LocalDate
-      .of(2025, 1, 1)
-      .atStartOfDay()
-      .toInstant(java.time.ZoneOffset.UTC)
-      .toEpochMilli()
+    val room = roomStore.getRoom("!testroom:localhost")!!
 
     request.sendResponse(
       statusCode = 200,
@@ -393,7 +398,7 @@ class Matrix {
         nextBatch = "s1",
         rooms = SyncRooms(
           join = mapOf(
-            roomId to SyncRoom(
+            room.roomId to SyncRoom(
               timeline = SyncRoomTimeline(
                 events = emptyList(),
                 limited = false,
@@ -409,7 +414,7 @@ class Matrix {
                       "roomVersion" to "1",
                     ),
                     sender = session.userId,
-                    originServerTs = roomCreated,
+                    originServerTs = room.createdAt,
                     eventId = $$"$room_created:localhost",
                   ),
                   SyncRoomEvent(
@@ -420,17 +425,17 @@ class Matrix {
                       "displayname" to session.userId,
                     ),
                     sender = session.userId,
-                    originServerTs = roomCreated,
+                    originServerTs = room.createdAt,
                     eventId = $$"$member:localhost",
                   ),
                   SyncRoomEvent(
                     type = "m.room.name",
                     stateKey = "",
                     content = mapOf(
-                      "name" to roomName,
+                      "name" to room.roomName,
                     ),
                     sender = session.userId,
-                    originServerTs = roomCreated,
+                    originServerTs = room.createdAt,
                     eventId = $$"$name:localhost",
                   ),
                 ),

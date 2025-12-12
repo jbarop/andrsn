@@ -4,7 +4,7 @@ import io.andrsn.http.startHttpServer
 import io.andrsn.matrix.Matrix
 
 fun main() {
-  val matrix = Matrix()
+  val matrix = Matrix(serverName = "localhost")
   startHttpServer(matrix)
   println("I know kung fu.")
 }
