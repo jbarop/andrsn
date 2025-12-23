@@ -62,7 +62,7 @@ class RegisterIntegrationTest {
 
     val sessionId = uiaResponse.data.session
     val completeRequest = RegisterRequest(
-      username = "testuser",
+      username = "@testuser:localhost",
       password = "password123",
       deviceId = null,
       initialDeviceDisplayName = null,
@@ -149,7 +149,7 @@ class RegisterIntegrationTest {
 
     val session = getAuthSession(sut)
     val request = RegisterRequest(
-      username = "testuser",
+      username = "@testuser:localhost",
       password = "different_password",
       deviceId = null,
       initialDeviceDisplayName = null,

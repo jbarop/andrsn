@@ -222,7 +222,7 @@ class Matrix(
           error = "Missing password.",
         ),
       )
-    val user = userStore.getUser(username)
+    val user = userStore.getUser("@$username:$serverName")
     val valid = passwordHasher.verifyPassword(password, user?.passwordHash)
 
     if (!valid || user == null) {
@@ -236,7 +236,7 @@ class Matrix(
     }
 
     val newSession = userSessions.create(
-      userId = "@${user.username}:localhost",
+      userId = user.username,
       deviceId = TokenGenerator.generate(),
     )
 
@@ -244,7 +244,7 @@ class Matrix(
       statusCode = 200,
       data = LoginResponse(
         userId = newSession.userId,
-        homeServer = "localhost",
+        homeServer = serverName,
         accessToken = newSession.accessToken,
         deviceId = newSession.deviceId,
       ),
@@ -351,22 +351,22 @@ class Matrix(
       request.sendResponse(
         200,
         RegisterSuccessResponse(
-          userId = "@${user.username}:localhost",
-          homeServer = "localhost",
+          userId = user.username,
+          homeServer = serverName,
           accessToken = null,
           deviceId = null,
         ),
       )
     } else {
       val newSession = userSessions.create(
-        userId = "@${user.username}:localhost",
+        userId = user.username,
         deviceId = TokenGenerator.generate(),
       )
       request.sendResponse(
         statusCode = 200,
         data = RegisterSuccessResponse(
           userId = newSession.userId,
-          homeServer = "localhost",
+          homeServer = serverName,
           accessToken = newSession.accessToken,
           deviceId = newSession.deviceId,
         ),
@@ -390,7 +390,7 @@ class Matrix(
 
   private fun sync(request: MatrixRequest) {
     val session = request.getAccessToken() ?: return
-    val room = roomStore.getRoom("!testroom:localhost")!!
+    val room = roomStore.getRoom("!testroom:$serverName")!!
 
     request.sendResponse(
       statusCode = 200,

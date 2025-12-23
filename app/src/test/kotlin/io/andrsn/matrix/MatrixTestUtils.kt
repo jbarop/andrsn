@@ -103,7 +103,7 @@ object MatrixTestUtils {
       method = "POST",
       path = "/_matrix/client/v3/register",
       body = RegisterRequest(
-        username = username,
+        username = "@$username:localhost",
         password = password,
         deviceId = null,
         initialDeviceDisplayName = null,
